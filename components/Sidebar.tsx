@@ -1,6 +1,6 @@
 "use client";
 
-import { HomeIcon, DocumentIcon, ChatBubbleLeftIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { HomeIcon, DocumentIcon, ChatBubbleLeftIcon, PencilIcon, BriefcaseIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -8,38 +8,43 @@ const navItems = [
   {
     name: "Dashboard",
     icon: HomeIcon,
-    href: "/",
+    href: "/home",
   },
   {
-    name: "Resume Analyzer",
+    name: "Resume Optimizer",
     icon: DocumentIcon,
-    href: "/analyzer",
+    href: "/resume-optimizer",
+  },
+  {
+    name: "LinkedIn Optimizer",
+    icon: BriefcaseIcon,
+    href: "/linkedin-optimizer",
+  },
+  {
+    name: "Cover Letter",
+    icon: DocumentTextIcon,
+    href: "/cover-letter",
   },
   {
     name: "Interview Prep",
     icon: ChatBubbleLeftIcon,
-    href: "/interview",
-  },
-  {
-    name: "Editor",
-    icon: PencilIcon,
-    href: "/editor",
+    href: "/interview-prep",
   },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-
+  
   return (
-    <nav className="fixed w-64 h-screen bg-white border-r border-gray-200">
+    <nav className="fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 z-10">
       <div className="flex flex-col h-full">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800">CVSwitch</h1>
+        <div className="p-4 border-b border-gray-200">
+          <h1 className="text-xl font-bold text-blue-600">CVSwitch</h1>
         </div>
-
-        <div className="flex-1 px-3">
+        
+        <div className="flex-1 px-3 py-4">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = pathname.startsWith(item.href);
             
             return (
               <Link
@@ -56,6 +61,13 @@ export function Sidebar() {
               </Link>
             );
           })}
+        </div>
+        
+        <div className="p-4 border-t border-gray-200">
+          <div className="text-xs text-gray-500">
+            <p>© 2023 CVSwitch</p>
+            <p>All rights reserved</p>
+          </div>
         </div>
       </div>
     </nav>
