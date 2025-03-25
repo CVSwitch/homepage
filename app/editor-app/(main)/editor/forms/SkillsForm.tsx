@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ChevronDown, ChevronRight, Settings } from "lucide-react";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useForm, useWatch } from "react-hook-form";
 import { useResume } from "./ResumeProvider";
@@ -49,9 +55,15 @@ export default function SkillsForm() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <CardTitle className="flex items-center justify-between">
-          <span className="text-xl">Skills</span>
+          <div className="flex items-center gap-2">
+            <Settings className="h-5 w-5" /> {/* Skills Icon */}
+            <span className="text-xl">Skills</span>
+          </div>
           {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
         </CardTitle>
+        <CardDescription>
+          Highlight your key technical and soft skills.
+        </CardDescription>
       </CardHeader>
 
       <div
@@ -64,13 +76,15 @@ export default function SkillsForm() {
             <form>
               <FormField
                 control={form.control}
-               name="skills.description"
+                name="skills.description"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <RichTextEditor
                         value={field.value || ""}
-                        onChange={(json) => form.setValue("skills.description", json)}
+                        onChange={(json) =>
+                          form.setValue("skills.description", json)
+                        }
                       />
                     </FormControl>
                   </FormItem>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, User } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -12,7 +12,13 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { PersonalInfo, personalInfoSchema } from "@/lib/validation";
 import { useResume } from "./ResumeProvider";
 import { debounce } from "lodash";
@@ -48,7 +54,7 @@ export default function PersonalInfoForm() {
     updateResumeData();
     return () => updateResumeData.cancel();
   }, [watchedValues, setResumeData]);
-  
+
   return (
     <Card className="max-w-2xl mx-auto shadow-md">
       <CardHeader
@@ -56,9 +62,15 @@ export default function PersonalInfoForm() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <CardTitle className="flex items-center justify-between">
-          <span className="text-xl">Personal Info</span>
+          <div className="flex items-center gap-2">
+            <User className="h-5 w-5 " /> {/* Personal Info Icon */}
+            <span className="text-xl">Personal Info</span>
+          </div>
           {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
         </CardTitle>
+        <CardDescription>
+          Add your name, contact details, and location information.
+        </CardDescription>
       </CardHeader>
 
       <div

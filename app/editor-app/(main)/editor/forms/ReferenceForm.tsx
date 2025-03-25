@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ChevronDown, ChevronRight, Users } from "lucide-react";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useForm, useWatch } from "react-hook-form";
 import { useResume } from "./ResumeProvider";
@@ -49,9 +55,15 @@ export default function ReferenceForm() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <CardTitle className="flex items-center justify-between">
-          <span className="text-xl">Reference</span>
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5" /> {/* References Icon */}
+            <span className="text-xl">References</span>
+          </div>
           {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
         </CardTitle>
+        <CardDescription>
+          Provide professional references for verification.
+        </CardDescription>
       </CardHeader>
 
       <div

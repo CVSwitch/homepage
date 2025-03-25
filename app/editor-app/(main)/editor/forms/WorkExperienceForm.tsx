@@ -8,10 +8,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { workExperienceSchema, WorkExperience } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { Briefcase, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 import {
   Resolver,
@@ -37,7 +43,9 @@ export default function WorkExperienceForm() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const form = useForm<WorkExperienceFormValues>({
-    resolver: zodResolver(workExperienceSchema) as Resolver<WorkExperienceFormValues>,
+    resolver: zodResolver(
+      workExperienceSchema
+    ) as Resolver<WorkExperienceFormValues>,
     mode: "onChange",
     defaultValues: {
       workExperiences: resumeData.workExperiences,
@@ -60,7 +68,9 @@ export default function WorkExperienceForm() {
       setResumeData(resumeDataRef.current);
     }, 300);
 
-    const subscription = form.watch((data) => updateResumeData(data as WorkExperienceFormValues));
+    const subscription = form.watch((data) =>
+      updateResumeData(data as WorkExperienceFormValues)
+    );
 
     return () => {
       subscription.unsubscribe();
@@ -80,9 +90,15 @@ export default function WorkExperienceForm() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <CardTitle className="flex items-center justify-between">
-          <span className="text-xl">Work Experience</span>
+          <div className="flex items-center gap-2">
+            <Briefcase className="h-5 w-5" /> {/* Work Experience Icon */}
+            <span className="text-xl">Work Experience</span>
+          </div>
           {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
         </CardTitle>
+        <CardDescription>
+          Add your previous jobs, roles, responsibilities, and achievements.
+        </CardDescription>
       </CardHeader>
 
       <div
@@ -163,10 +179,14 @@ function WorkExperienceItem({
   useEffect(() => {
     if (deferreDescription) {
       const extractedText = extractText(deferreDescription);
-      form.setValue(`workExperiences.${index}.description_text`, extractedText, {
-        shouldValidate: false,
-        shouldDirty: true,
-      });
+      form.setValue(
+        `workExperiences.${index}.description_text`,
+        extractedText,
+        {
+          shouldValidate: false,
+          shouldDirty: true,
+        }
+      );
     }
   }, [deferreDescription, form, index]);
 
@@ -183,7 +203,11 @@ function WorkExperienceItem({
         <div className="flex justify-between items-center">
           <span className="font-semibold">Work Experience {index + 1}</span>
           <div className="flex items-center space-x-2">
-            {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+            {isExpanded ? (
+              <ChevronDown size={20} />
+            ) : (
+              <ChevronRight size={20} />
+            )}
             <Button
               variant="ghost"
               size="icon"

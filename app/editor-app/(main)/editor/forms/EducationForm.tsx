@@ -10,10 +10,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Education, educationSchema } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, GraduationCap, Trash2 } from "lucide-react";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 import {
   Resolver,
@@ -39,7 +45,7 @@ export default function EducationForm() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const form = useForm<EducationFormValues>({
     resolver: zodResolver(educationSchema) as Resolver<EducationFormValues>,
-    mode: "onChange", 
+    mode: "onChange",
     defaultValues: {
       education: resumeData.education || [],
     },
@@ -61,7 +67,9 @@ export default function EducationForm() {
       setResumeData(resumeDataRef.current);
     }, 300);
 
-    const subscription = form.watch((data) => updateResumeData(data as EducationFormValues));
+    const subscription = form.watch((data) =>
+      updateResumeData(data as EducationFormValues)
+    );
 
     return () => {
       subscription.unsubscribe();
@@ -81,9 +89,15 @@ export default function EducationForm() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <CardTitle className="flex items-center justify-between">
-          <span className="text-xl">Education</span>
+          <div className="flex items-center gap-2">
+            <GraduationCap className="h-5 w-5" /> {/* Education Icon */}
+            <span className="text-xl">Education</span>
+          </div>
           {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
         </CardTitle>
+        <CardDescription>
+          Add your academic background, degrees, and certifications.
+        </CardDescription>
       </CardHeader>
 
       <div
@@ -187,7 +201,11 @@ function EducationItem({
         <div className="flex justify-between items-center">
           <span className="font-semibold">Education {index + 1}</span>
           <div className="flex items-center space-x-2">
-            {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+            {isExpanded ? (
+              <ChevronDown size={20} />
+            ) : (
+              <ChevronRight size={20} />
+            )}
             <Button
               variant="ghost"
               size="icon"

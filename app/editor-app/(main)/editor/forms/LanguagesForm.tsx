@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ChevronDown, ChevronRight, Globe } from "lucide-react";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useForm, useWatch } from "react-hook-form";
 import { useResume } from "./ResumeProvider";
@@ -49,9 +55,15 @@ export default function LanguagesForm() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <CardTitle className="flex items-center justify-between">
-          <span className="text-xl">Languages</span>
+          <div className="flex items-center gap-2">
+            <Globe className="h-5 w-5" /> {/* Languages Icon */}
+            <span className="text-xl">Languages</span>
+          </div>
           {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
         </CardTitle>
+        <CardDescription>
+          List the languages you speak and your proficiency levels.
+        </CardDescription>
       </CardHeader>
 
       <div

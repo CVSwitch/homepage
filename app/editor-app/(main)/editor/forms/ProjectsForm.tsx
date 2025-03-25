@@ -10,12 +10,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Projects, projectsSchema } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, FolderOpen, Trash2 } from "lucide-react";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
-import { useFieldArray, useForm, UseFormReturn, useWatch } from "react-hook-form";
+import {
+  useFieldArray,
+  useForm,
+  UseFormReturn,
+  useWatch,
+} from "react-hook-form";
 import { DatePicker } from "@/components/ui/Datepicker";
 import { useResume } from "./ResumeProvider";
 import RichTextEditor from "@/components/RichTextEditor";
@@ -72,9 +83,15 @@ export default function ProjectsForm() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <CardTitle className="flex items-center justify-between">
-          <span className="text-xl">Project</span>
+          <div className="flex items-center gap-2">
+            <FolderOpen className="h-5 w-5" /> {/* Projects Icon */}
+            <span className="text-xl">Project</span>
+          </div>
           {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
         </CardTitle>
+        <CardDescription>
+          Showcase your notable projects, contributions, and achievements.
+        </CardDescription>
       </CardHeader>
 
       <div

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronDown, ChevronRight, Mail } from "lucide-react";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,7 +24,7 @@ export default function CoverLetterForm() {
       coverLetter: {
         description: coverLetterData.description || "",
         description_text: coverLetterData.description_text || "",
-      }
+      },
     },
   });
 
@@ -55,9 +55,15 @@ export default function CoverLetterForm() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <CardTitle className="flex items-center justify-between">
-          <span className="text-xl">Cover Letter</span>
+          <div className="flex items-center gap-2">
+            <Mail className="h-5 w-5" /> {/* Cover Letter Icon */}
+            <span className="text-xl">Cover Letter</span>
+          </div>
           {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
         </CardTitle>
+        <CardDescription>
+          Craft a personalized cover letter to enhance your job applications.
+        </CardDescription>
       </CardHeader>
 
       <div
