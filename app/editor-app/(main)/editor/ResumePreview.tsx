@@ -331,7 +331,7 @@ const ReferencesSection = memo(({ references }: ResumeSectionProps) => {
 });
 
 const GenericSection = memo(({ title, data }: GenericSectionProps) => {
-  if (!data || !data.description) return null;
+  if (!data || !data.description || data.description === "<p></p>") return null;
   const sanitizedHTML = DOMPurify.sanitize(data.description);
 
   return (

@@ -2,9 +2,7 @@ import { useRef, useState } from "react";
 import ResumePreview from "./ResumePreview";
 import TwoColumnResumePreview from "./TwoColumnResumePreview";
 import TwoColumnColoredResumePreview from "./TwoColumnColoredResumePreview";
-import { useReactToPrint } from "react-to-print";
 import TemplateDrawer from "./TemplateDrawer";
-import { Button } from "@/components/ui/button";
 import SingleColumnColored from "./SingleColumnColored";
 
 type TemplateType = "single" | "double" | "colored" | "singleColored";
@@ -13,16 +11,8 @@ export default function ResumePreviewSection() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [template, setTemplate] = useState<TemplateType>("single");
 
-  // const handlePrint = useReactToPrint({
-  //   content: () => contentRef.current,
-  //   documentTitle: "Resume",
-  // });
-
   return (
     <div className="w-1/2">
-      {/* <div className="flex items-center justify-end mb-4">
-        <Button onClick={() => handlePrint()}>Print Resume</Button>
-      </div> */}
 
       <div className="flex w-full justify-center bg-secondary overflow-y-auto h-[100vh] p-3 relative">
         <TemplateDrawer currentTemplate={template} onTemplateChange={setTemplate} />

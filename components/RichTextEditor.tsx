@@ -10,9 +10,10 @@ import { debounce } from "lodash";
 type TextEditorProps = {
   value: string;
   onChange: (content: string) => void; 
+  height?: string;
 };
 
-export default function RichTextEditor({ value, onChange }: TextEditorProps) {
+export default function RichTextEditor({ value, onChange, height="156px" }: TextEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -32,7 +33,7 @@ export default function RichTextEditor({ value, onChange }: TextEditorProps) {
     editorProps: {
       attributes: {
         class:
-          "h-[156px] border rounded-md py-2 px-3 overflow-y-auto",
+          `h-[${height}] border rounded-md py-2 px-3 overflow-y-auto`,
       },
     },
     immediatelyRender: false,

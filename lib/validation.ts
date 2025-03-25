@@ -123,6 +123,13 @@ export const referencesSchema = z.object({
   }),
 });
 
+export const coverLetterSchema = z.object({
+  coverLetter: z.object({
+    description: z.string().optional(),
+    description_text: z.string().optional(),
+  }),
+});
+
 export type PersonalInfo = z.infer<typeof personalInfoSchema>;
 export type WorkExperience = z.infer<typeof workExperienceSchema>;
 export type Education = z.infer<typeof educationSchema>;
@@ -133,6 +140,7 @@ export type Skills = z.infer<typeof skillsSchema>;
 export type Languages = z.infer<typeof languagesSchema>;
 export type Interests = z.infer<typeof interestsSchema>;
 export type References = z.infer<typeof referencesSchema>;
+export type CoverLetter = z.infer<typeof coverLetterSchema>;
 
 export const resumeSchema = z.object({
   personalInfo: personalInfoSchema,
