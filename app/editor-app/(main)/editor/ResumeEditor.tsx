@@ -6,7 +6,7 @@ import InterestForm from "./forms/InterestForm";
 import LanguagesForm from "./forms/LanguagesForm";
 import PersonalInfoForm from "./forms/PersonalInfoForm";
 import ReferenceForm from "./forms/ReferenceForm";
-import { ResumeProvider, useResume } from "./forms/ResumeProvider";
+import { ResumeProvider } from "./forms/ResumeProvider";
 import SkillsForm from "./forms/SkillsForm";
 import VolunteerForm from "./forms/VolunteerForm";
 import WorkExperienceForm from "./forms/WorkExperienceForm";
@@ -23,7 +23,7 @@ export default function ResumeEditor({ initialData }: ResumeEditorProps) {
     <ResumeProvider initialData={initialData}>
       <div className="flex h-screen">
         <main className="flex grow">
-          <div className="w-1/2 px-4 overflow-y-auto pb-10 hidden-scrollbar">
+          <div className="w-1/2 px-4 overflow-y-auto mt-16 pb-10 hidden-scrollbar">
             <PersonalInfoForm />
             <WorkExperienceForm />
             <EducationForm />

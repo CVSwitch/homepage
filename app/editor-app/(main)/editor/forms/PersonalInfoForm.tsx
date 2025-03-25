@@ -50,7 +50,7 @@ export default function PersonalInfoForm() {
   }, [watchedValues, setResumeData]);
   
   return (
-    <Card className="max-w-2xl mx-auto mt-20 shadow-md">
+    <Card className="max-w-2xl mx-auto shadow-md">
       <CardHeader
         className="cursor-pointer select-none"
         onClick={() => setIsOpen(!isOpen)}
