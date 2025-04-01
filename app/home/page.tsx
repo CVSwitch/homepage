@@ -1,7 +1,6 @@
 "use client";
 
 import { Sidebar } from "@/components/Sidebar";
-import { ProfileDropdown } from "@/components/ProfileDropdown";
 import { HeroSection } from "@/components/HeroSection";
 import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
@@ -61,7 +60,6 @@ export default function Home() {
           <h1 className="text-2xl font-bold text-gray-800">
             Welcome back, <span className="text-blue-600">{user?.displayName || 'User'}</span>! 👋
           </h1>
-          <ProfileDropdown user={user} />
         </div>
 
         <HeroSection 

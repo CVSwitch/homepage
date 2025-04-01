@@ -1,8 +1,5 @@
 "use client";
 
-import { Sidebar } from "@/components/Sidebar";
-import { ProfileDropdown } from "@/components/ProfileDropdown";
-import { HeroSection } from "@/components/HeroSection";
 import { signInWithGoogle, auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
