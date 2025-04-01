@@ -128,7 +128,7 @@ export function CoverLetterSection() {
               />
             </div>
 
-            <Link href="/editor-app/cover-letter-editor">
+            <Link href="/editor-app/editor?mode=cover-letter">
               <div className="flex flex-col items-center justify-center p-6 bg-white rounded-xl border-2 border-slate-200 hover:border-indigo-300 transition-colors cursor-pointer h-full">
                 <PencilIcon className="w-12 h-12 text-indigo-600 mb-3" />
                 <h3 className="font-semibold text-lg mb-1 text-slate-800">
