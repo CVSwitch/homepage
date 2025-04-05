@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft } from "lucide-react";
 
@@ -9,21 +9,37 @@ export default function ImportPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const jsonUrl = searchParams.get('jsonUrl');
 
   useEffect(() => {
     async function fetchResumeData() {
       try {
-        // Use the correct API path with /api prefix
-        const response = await fetch("/api/mockResume");
+        let data;
         
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
+        if (jsonUrl) {
+          // Fetch from the provided JSON URL
+          const response = await fetch(jsonUrl);
+          
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+          }
+          
+          data = await response.json();
+          console.log("Resume data fetched from JSON URL:", data);
+        } else {
+          // Fallback to mock data if no URL provided
+          const response = await fetch("/api/mockResume");
+          
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+          }
+          
+          data = await response.json();
+          console.log("Resume data fetched from mock API:", data);
         }
         
-        const data = await response.json();
-        console.log("Resume data fetched successfully:", data);
-        
-        // Store the data in localStorage or state management
+        // Store the data in localStorage
         localStorage.setItem("resumeData", JSON.stringify(data));
         
         // Redirect to editor
@@ -36,7 +52,7 @@ export default function ImportPage() {
     }
 
     fetchResumeData();
-  }, [router]);
+  }, [router, jsonUrl]);
 
   if (error) {
     return (

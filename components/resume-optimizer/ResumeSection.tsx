@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   DocumentArrowUpIcon,
   PencilIcon,
@@ -14,10 +14,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/hooks/useAuth";
+import { useResumes } from "@/hooks/useResumes";
 
 interface Resume {
   id: string;
@@ -34,21 +35,21 @@ interface ResumeAnalysis {
 }
 
 export function ResumeSection() {
-  const [pastResumes, setPastResumes] = useState<Resume[]>([
-    {
-      id: "1",
-      name: "Software_Engineer_Resume.pdf",
-      lastModified: "2024-03-15",
-    },
-    { id: "2", name: "Product_Manager_Resume.pdf", lastModified: "2024-03-10" },
-  ]);
-
+  const { user } = useAuth();
+  const { 
+    resumes, 
+    isLoading, 
+    uploadResume, 
+    uploadLoading 
+  } = useResumes(user?.uid);
+  
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "strengths" | "weaknesses" | "improvements"
   >("strengths");
+  const [parsingStatus, setParsingStatus] = useState<"idle" | "parsing" | "completed">("idle");
 
   const [currentAnalysis, setCurrentAnalysis] = useState<ResumeAnalysis>({
     fileName: "",
@@ -57,18 +58,22 @@ export function ResumeSection() {
     improvements: [],
   });
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0] && user) {
       const file = event.target.files[0];
       setSelectedFile(file);
-
-      const newResume: Resume = {
-        id: Date.now().toString(),
-        name: file.name,
-        lastModified: new Date().toISOString().split("T")[0],
-      };
-
-      setPastResumes([newResume, ...pastResumes]);
+      setParsingStatus("idle");
+      
+      // Upload the resume
+      await uploadResume(file);
+      
+      // Show parsing status
+      setParsingStatus("parsing");
+      
+      // Simulate parsing completion after 5 seconds (adjust based on actual parsing time)
+      setTimeout(() => {
+        setParsingStatus("completed");
+      }, 5000);
     }
   };
 
@@ -105,11 +110,16 @@ export function ResumeSection() {
           </h1>
 
           {/* Primary Options */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
             <div
+              onClick={() => fileInputRef.current?.click()}
               className="flex flex-col items-center justify-center p-6 bg-white rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-300 transition-colors cursor-pointer"
             >
-              <DocumentArrowUpIcon className="w-12 h-12 text-indigo-600 mb-3" />
+              {uploadLoading ? (
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+              ) : (
+                <DocumentArrowUpIcon className="w-12 h-12 text-indigo-600 mb-3" />
+              )}
               <h3 className="font-semibold text-lg mb-1 text-slate-800">Upload Resume</h3>
               <p className="text-slate-500 text-center">
                 Upload an existing resume file
@@ -135,14 +145,32 @@ export function ResumeSection() {
               </div>
             </Link>
           </div>
+          
+          {/* Parsing Status Message */}
+          {parsingStatus !== "idle" && (
+            <div className={`text-center p-2 mb-6 rounded-lg ${
+              parsingStatus === "parsing" 
+                ? "bg-amber-50 text-amber-700" 
+                : "bg-green-50 text-green-700"
+            }`}>
+              {parsingStatus === "parsing" 
+                ? "Your resume is being parsed. This may take a few moments..." 
+                : "Resume successfully parsed! You can now analyze it."}
+            </div>
+          )}
 
           {/* Past Resumes Section */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8 shadow-sm">
             <h2 className="text-xl font-semibold mb-4 text-slate-800">Past Resumes</h2>
 
-            {pastResumes.length > 0 ? (
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                <p className="text-slate-500">Loading your resumes...</p>
+              </div>
+            ) : resumes.length > 0 ? (
               <div className="space-y-3">
-                {pastResumes.map((resume) => (
+                {resumes.map((resume) => (
                   <div
                     key={resume.id}
                     className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
@@ -173,13 +201,16 @@ export function ResumeSection() {
                         </Button>
                       </Link>
 
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-slate-600 hover:bg-slate-100"
-                      >
-                        <ArrowDownTrayIcon className="w-5 h-5" />
-                      </Button>
+                      {resume.url && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-slate-600 hover:bg-slate-100"
+                          onClick={() => window.open(resume.url, '_blank')}
+                        >
+                          <ArrowDownTrayIcon className="w-5 h-5" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -187,8 +218,8 @@ export function ResumeSection() {
             ) : (
               <div className="text-center py-8 text-slate-500">
                 <p>
-                  No resumes found. Upload or create a new resume to get
-                  started.
+                  {user ? "No resumes found. Upload or create a new resume to get started." : 
+                   "Please sign in to view your resumes."}
                 </p>
               </div>
             )}

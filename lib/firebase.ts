@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 // Your web app's Firebase configuration
@@ -11,8 +11,17 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+export function initializeFirebase(): FirebaseApp {
+  const apps = getApps();
+  if (apps.length > 0) {
+    return apps[0];
+  }
+  
+  return initializeApp(firebaseConfig);
+}
+
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = initializeFirebase();
 const auth = getAuth(app);
 
 // Function to sign in with Google
