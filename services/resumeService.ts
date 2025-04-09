@@ -20,6 +20,7 @@ interface UserDataResponse {
 export const resumeService = {
   async getUserResumes(userId: string): Promise<Resume[]> {
     try {
+      userId = 'laiZltBIPFP1yGGFxwsvSVzKyPL2'
       const response = await fetch(`http://localhost:4400/api/v1/fetchuserdata?user_id=${userId}`);
       
       if (!response.ok) {
@@ -104,5 +105,27 @@ export const resumeService = {
       console.error('Error in uploadResume:', error);
       throw error;
     }
-  }
-}; 
+  },
+
+  async getLinkedInSuggestions(userId: string, resumeId: string): Promise<any> {
+    try {
+      userId = 'laiZltBIPFP1yGGFxwsvSVzKyPL2'
+      const response = await fetch(`http://localhost:4400/api/v1/linkedin-suggestions?user_id=${userId}&resume_id=${resumeId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch LinkedIn suggestions: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data; // Return the LinkedIn suggestions data
+    } catch (error) {
+      console.error('Error in getLinkedInSuggestions:', error);
+      throw error;
+    }
+  },
+};
