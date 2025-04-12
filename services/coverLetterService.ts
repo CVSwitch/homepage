@@ -26,7 +26,7 @@ export const coverLetterService = {
       console.log('Fetching cover letters for user:', userId);
       
       const response = await fetch(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FETCH_USER_DATA}?user_id=${userId}`
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PDF_TO_PARSED_JSON}?user_id=${userId}`
       );
       
       if (!response.ok) {
