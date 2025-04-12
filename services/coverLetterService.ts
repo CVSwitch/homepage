@@ -37,8 +37,8 @@ export const coverLetterService = {
       console.log('API Response:', data); // Debug log
       
       // Check if we have cover letters in the response
-      if (data.data && Array.isArray(data.data.cover_letter)) {
-        return data.data.cover_letter.map((coverLetter, index) => {
+      if (data.data && Array.isArray(data.data.uploaded_cover_letter)) {
+        return data.data.uploaded_cover_letter.map((coverLetter, index) => {
           const cloudPath = coverLetter.cloud_path || '';
           const fileName = cloudPath.split('/').pop() || `Cover Letter ${index + 1}`;
           

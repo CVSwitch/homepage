@@ -119,12 +119,15 @@ export const resumeService = {
 
   async getLinkedInSuggestions(userId: string, resumeId: string): Promise<any> {
     try {
-      const response = await fetch(`http://localhost:4400/api/v1/linkedin-suggestions?user_id=${userId}&resume_id=${resumeId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LINKEDIN_SUGGESTIONS}?user_id=${userId}&resume_id=${resumeId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch LinkedIn suggestions: ${response.status}`);
@@ -156,7 +159,7 @@ export const resumeService = {
 
       // Second API call to fetch the actual analysis JSON
       const fetchAnalysisResponse = await fetch(
-        `http://localhost:4400/api/v1/fetchanalyzedjson?user_id=${userId}&cloud_file_path=${encodeURIComponent(analyzeResult.data.cloud_file_path)}`,
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FETCH_ANALYZED_JSON}?user_id=${userId}&cloud_file_path=${encodeURIComponent(analyzeResult.data.cloud_file_path)}`,
         {
           method: 'GET',
           headers: {

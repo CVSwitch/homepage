@@ -6,5 +6,6 @@ export const API_CONFIG = {
     UPLOAD_RESUME: '/api/v1/uploadresume',
     ANALYZE_RESUME: '/api/v1/analyzeparsedjson',
     FETCH_ANALYZED_JSON: '/api/v1/fetchanalyzedjson',
+    LINKEDIN_SUGGESTIONS: '/api/v1/linkedin-suggestions',
   }
 }; 
