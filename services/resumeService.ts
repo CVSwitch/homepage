@@ -1,5 +1,6 @@
 import type { Resume } from '@/types/resume';
 import { pdfParserService } from './pdfParserService';
+import { API_CONFIG } from '@/config/api';
 
 interface UserDataResponse {
   data: {
@@ -25,7 +26,9 @@ interface ResumeAnalysis {
 export const resumeService = {
   async getUserResumes(userId: string): Promise<Resume[]> {
     try {
-      const response = await fetch(`http://localhost:4400/api/v1/fetchuserdata?user_id=${userId}`);
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FETCH_USER_DATA}?user_id=${userId}`
+      );
       
       if (!response.ok) {
         throw new Error(`Failed to fetch resumes: ${response.status}`);
@@ -80,10 +83,13 @@ export const resumeService = {
       const formData = new FormData();
       formData.append('file', file);
       
-      const response = await fetch(`http://localhost:4400/api/v1/uploadresume?user_id=${userId}`, {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD_RESUME}?user_id=${userId}`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
       
       if (!response.ok) {
         throw new Error(`Failed to upload resume: ${response.status}`);
@@ -137,20 +143,11 @@ export const resumeService = {
       const urlParts = jsonUrl.split('cvswitch-54227.appspot.com/');
       const fullPath = urlParts[1];
       
-      console.log('Request parameters:', { userId, jsonUrl, fullPath });
-
-      // First API call to analyze and get the cloud file path
-      const analyzeResponse = await fetch(
-        `http://localhost:4400/api/v1/analyzeparsedjson?user_id=${userId}&cloud_file_path=${encodeURIComponent(fullPath)}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ANALYZE_RESUME}?user_id=${userId}&cloud_file_path=${encodeURIComponent(fullPath)}`
       );
-
-      const analyzeResult = await analyzeResponse.json();
+      
+      const analyzeResult = await response.json();
       console.log('Analyze API Response:', analyzeResult);
 
       if (!analyzeResult.data || !analyzeResult.data.cloud_file_path) {

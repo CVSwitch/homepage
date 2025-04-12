@@ -1,3 +1,5 @@
+import { API_CONFIG } from '@/config/api';
+
 interface CoverLetter {
   id: string;
   name: string;
@@ -23,7 +25,9 @@ export const coverLetterService = {
     try {
       console.log('Fetching cover letters for user:', userId);
       
-      const response = await fetch(`http://localhost:4400/api/v1/fetchuserdata?user_id=${userId}`);
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FETCH_USER_DATA}?user_id=${userId}`
+      );
       
       if (!response.ok) {
         throw new Error(`Failed to fetch cover letters: ${response.status}`);
@@ -61,10 +65,13 @@ export const coverLetterService = {
       const formData = new FormData();
       formData.append('file', file);
       
-      const response = await fetch(`http://localhost:4400/api/v1/uploadcoverletter?user_id=${userId}`, {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD_COVER_LETTER}?user_id=${userId}`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
       
       if (!response.ok) {
         const errorData = await response.json();
