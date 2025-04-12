@@ -1,3 +1,5 @@
+import { API_CONFIG } from "@/config/api";
+
 interface ParsedJsonResponse {
   data: {
     path_cloud_url: string;
@@ -18,7 +20,7 @@ export const pdfParserService = {
   async convertPdfToJson(userId: string, pdfPath: string): Promise<string | null> {
     try {
       const response = await fetch(
-        `http://localhost:4400/api/v1/pdftoparsedjson?user_id=${userId}&path_pdf_url=${pdfPath}`
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FETCH_USER_DATA}?user_id=${userId}&path_pdf_url=${pdfPath}`
       );
       
       if (!response.ok) {

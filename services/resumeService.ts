@@ -1,5 +1,6 @@
 import type { Resume } from '@/types/resume';
 import { pdfParserService } from './pdfParserService';
+import { API_CONFIG } from '@/config/api';
 
 interface UserDataResponse {
   data: {
@@ -17,11 +18,17 @@ interface UserDataResponse {
   status: number;
 }
 
+interface ResumeAnalysis {
+  Areas_of_Improvment: string[];
+  strengths: string[];
+}
+
 export const resumeService = {
   async getUserResumes(userId: string): Promise<Resume[]> {
     try {
-      userId = 'laiZltBIPFP1yGGFxwsvSVzKyPL2'
-      const response = await fetch(`http://localhost:4400/api/v1/fetchuserdata?user_id=${userId}`);
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FETCH_USER_DATA}?user_id=${userId}`
+      );
       
       if (!response.ok) {
         throw new Error(`Failed to fetch resumes: ${response.status}`);
@@ -76,10 +83,13 @@ export const resumeService = {
       const formData = new FormData();
       formData.append('file', file);
       
-      const response = await fetch(`http://localhost:4400/api/v1/uploadresume?user_id=${userId}`, {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD_RESUME}?user_id=${userId}`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
       
       if (!response.ok) {
         throw new Error(`Failed to upload resume: ${response.status}`);
@@ -109,13 +119,15 @@ export const resumeService = {
 
   async getLinkedInSuggestions(userId: string, resumeId: string): Promise<any> {
     try {
-      userId = 'laiZltBIPFP1yGGFxwsvSVzKyPL2'
-      const response = await fetch(`http://localhost:4400/api/v1/linkedin-suggestions?user_id=${userId}&resume_id=${resumeId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LINKEDIN_SUGGESTIONS}?user_id=${userId}&resume_id=${resumeId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch LinkedIn suggestions: ${response.status}`);
@@ -125,6 +137,54 @@ export const resumeService = {
       return data; // Return the LinkedIn suggestions data
     } catch (error) {
       console.error('Error in getLinkedInSuggestions:', error);
+      throw error;
+    }
+  },
+
+  async analyzeResume(userId: string, jsonUrl: string): Promise<ResumeAnalysis> {
+    try {
+      const urlParts = jsonUrl.split('cvswitch-54227.appspot.com/');
+      const fullPath = urlParts[1];
+      
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ANALYZE_RESUME}?user_id=${userId}&cloud_file_path=${encodeURIComponent(fullPath)}`
+      );
+      
+      const analyzeResult = await response.json();
+      console.log('Analyze API Response:', analyzeResult);
+
+      if (!analyzeResult.data || !analyzeResult.data.cloud_file_path) {
+        throw new Error('No analysis file path received');
+      }
+
+      // Second API call to fetch the actual analysis JSON
+      const fetchAnalysisResponse = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FETCH_ANALYZED_JSON}?user_id=${userId}&cloud_file_path=${encodeURIComponent(analyzeResult.data.cloud_file_path)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const fetchResult = await fetchAnalysisResponse.json();
+      console.log('Fetch Analysis API Response:', fetchResult);
+
+      if (!fetchResult.data) {
+        throw new Error('No analysis data received');
+      }
+
+      // Return the analysis data
+      const analysisData = {
+        Areas_of_Improvment: fetchResult.data.Areas_of_Improvment || [],
+        strengths: fetchResult.data.strengths || []
+      };
+      console.log('Final Analysis Data:', analysisData);
+
+      return analysisData;
+    } catch (error) {
+      console.error('Error in analyzeResume:', error);
       throw error;
     }
   },

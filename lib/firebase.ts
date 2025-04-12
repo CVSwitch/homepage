@@ -26,11 +26,12 @@ const auth = getAuth(app);
 
 // Function to sign in with Google
 export const signInWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
   try {
+    const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
-    return result.user;
+    return result; // This will return UserCredential object
   } catch (error) {
+    console.error('Error in signInWithGoogle:', error);
     throw error;
   }
 };

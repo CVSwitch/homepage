@@ -9,55 +9,48 @@ export default function LandingPage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
-
-
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
       const result = await signInWithGoogle();
-      setUser(result);
-      
-      // Redirect to home page after successful sign-in
-      router.push('/home');
+      // Check if result exists and has the correct structure
+      if (result && result.user) {
+        setUser(result.user);
+        // Redirect to home page after successful sign-in
+        router.push('/home');
+      } else {
+        console.error('Invalid sign-in result:', result);
+        throw new Error('Failed to get user data from sign-in');
+      }
     } catch (error) {
       console.error('Error signing in with Google:', error);
+      // You might want to show an error message to the user here
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="p-8 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Welcome to CVSwitch</h1>
+    <div className="min-h-screen flex items-stretch bg-gradient-to-r from-blue-100 to-blue-300">
+      <div className="flex-1 flex items-center justify-center bg-gray-100 p-8">
+        <img src="/mascot/main.png" alt="CVSwitch Logo" className="w-40 h-40" />
+      </div>
+      <div className="flex-1 flex flex-col justify-center p-8 bg-white">
+        <h1 className="text-3xl font-bold text-gray-800 text-center mb-4">CVSwitch</h1>
+        <h2 className="text-xl font-semibold mb-6 text-center text-gray-700">Build Your Dream Resume in Minutes</h2>
         <button
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-lg px-6 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 w-full"
+          className="flex items-center justify-center gap-2 bg-blue-600 text-white rounded-lg px-6 py-3 text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-600 mx-auto"
         >
           {loading ? (
-            <div className="animate-spin h-5 w-5 border-t-2 border-b-2 border-gray-800 rounded-full"></div>
+            <div className="animate-spin h-5 w-5 border-t-2 border-b-2 border-white rounded-full"></div>
           ) : (
             <>
-              <img
-                src="/images/google-logo.svg"
-                alt="Google logo"
-                className="w-5 h-5"
-              />
-              Sign in with Google
+              Continue with Google
             </>
           )}
         </button>
-        {user && (
-          <div className="mt-4 text-center">
-            <img
-              src={user.photoURL}
-              alt="Profile"
-              className="w-16 h-16 rounded-full mx-auto"
-            />
-            <p className="mt-2">{user.displayName}</p>
-          </div>
-        )}
         
         {/* Add reset button for connection issues */}
         <div className="mt-4 text-center">
