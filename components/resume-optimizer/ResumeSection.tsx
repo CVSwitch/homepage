@@ -19,19 +19,22 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/useAuth";
 import { useResumes } from "@/hooks/useResumes";
+import { Loader2 } from "lucide-react";
+import { resumeService } from "@/services/resumeService";
 
 interface Resume {
   id: string;
   name: string;
   lastModified: string;
   url?: string;
+  cloudPath?: string;
+  jsonUrl?: string | null;
+  parsingStatus?: "parsing" | "completed" | "failed" | undefined;
 }
 
 interface ResumeAnalysis {
-  fileName: string;
+  Areas_of_Improvment: string[];
   strengths: string[];
-  weaknesses: string[];
-  improvements: string[];
 }
 
 export function ResumeSection() {
@@ -50,13 +53,9 @@ export function ResumeSection() {
     "strengths" | "weaknesses" | "improvements"
   >("strengths");
   const [parsingStatus, setParsingStatus] = useState<"idle" | "parsing" | "completed">("idle");
-
-  const [currentAnalysis, setCurrentAnalysis] = useState<ResumeAnalysis>({
-    fileName: "",
-    strengths: [],
-    weaknesses: [],
-    improvements: [],
-  });
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [currentAnalysis, setCurrentAnalysis] = useState<ResumeAnalysis | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0] && user) {
@@ -77,27 +76,26 @@ export function ResumeSection() {
     }
   };
 
-  const handleAnalyze = (resume: Resume) => {
-    setCurrentAnalysis({
-      fileName: resume.name,
-      strengths: [
-        "Strong technical skills section",
-        "Clear work experience with quantifiable achievements",
-        "Well-organized education section",
-      ],
-      weaknesses: [
-        "Summary statement is too generic",
-        "Missing relevant certifications",
-        "Project descriptions lack impact metrics",
-      ],
-      improvements: [
-        'Add specific achievements with numbers (e.g., "Increased performance by 40%")',
-        "Tailor skills section to match job descriptions",
-        "Include relevant certifications or courses",
-      ],
-    });
+  const handleAnalyze = async (resume: Resume) => {
+    if (!user?.uid || !resume.jsonUrl) {
+      setError('Missing required data for analysis');
+      return;
+    }
+
+    setAnalysisLoading(true);
     setShowAnalysisModal(true);
-    setActiveTab("strengths");
+    setError(null);
+    
+    try {
+      const analysis = await resumeService.analyzeResume(user.uid, resume.jsonUrl);
+      console.log('Analysis response:', analysis); // Debug log
+      setCurrentAnalysis(analysis);
+    } catch (error) {
+      console.error('Error analyzing resume:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred while analyzing the resume');
+    } finally {
+      setAnalysisLoading(false);
+    }
   };
 
   return (
@@ -234,65 +232,74 @@ export function ResumeSection() {
             <DialogTitle className="text-slate-800">Resume Analysis</DialogTitle>
           </DialogHeader>
 
-          <div className="flex h-[400px]">
-            {/* Sidebar */}
-            <div className="w-48 border-r border-slate-200 p-4 bg-slate-50">
-              <div className="space-y-1">
-                <button
-                  onClick={() => setActiveTab("strengths")}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                    activeTab === "strengths"
-                      ? "bg-indigo-100 text-indigo-700 font-medium border-l-4 border-indigo-500"
-                      : "hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  Strengths
-                </button>
-                <button
-                  onClick={() => setActiveTab("weaknesses")}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                    activeTab === "weaknesses"
-                      ? "bg-indigo-100 text-indigo-700 font-medium border-l-4 border-indigo-500"
-                      : "hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  Weaknesses
-                </button>
-                <button
-                  onClick={() => setActiveTab("improvements")}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                    activeTab === "improvements"
-                      ? "bg-indigo-100 text-indigo-700 font-medium border-l-4 border-indigo-500"
-                      : "hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  Improvements
-                </button>
-              </div>
+          {error ? (
+            <div className="flex items-center justify-center p-12 text-red-600">
+              <p>{error}</p>
             </div>
+          ) : analysisLoading ? (
+            <div className="flex items-center justify-center p-12">
+              <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+              <span className="ml-3 text-slate-600">Analyzing your resume...</span>
+            </div>
+          ) : currentAnalysis ? (
+            <div className="flex h-[500px]">
+              {/* Sidebar */}
+              <div className="w-48 border-r border-slate-200 p-4 bg-slate-50">
+                <div className="space-y-1">
+                  <button
+                    onClick={() => setActiveTab("strengths")}
+                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                      activeTab === "strengths"
+                        ? "bg-indigo-100 text-indigo-700 font-medium border-l-4 border-indigo-500"
+                        : "hover:bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    Strengths
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("improvements")}
+                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                      activeTab === "improvements"
+                        ? "bg-indigo-100 text-indigo-700 font-medium border-l-4 border-indigo-500"
+                        : "hover:bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    Improvements
+                  </button>
+                </div>
+              </div>
 
-            {/* Main Content */}
-            <ScrollArea className="flex-1 p-6">
-              <h3 className="text-lg font-medium mb-4 text-slate-800 capitalize">
-                {activeTab}
-              </h3>
+              {/* Main Content */}
+              <ScrollArea className="flex-1 p-6">
+                <h3 className="text-lg font-medium mb-4 text-slate-800 capitalize">
+                  {activeTab === "improvements" ? "Areas of Improvement" : activeTab}
+                </h3>
 
-              <ul className="space-y-4">
-                {currentAnalysis[activeTab].map((item, index) => (
-                  <li key={index} className="flex items-start">
-                    <span
-                      className={`inline-block w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0
-                      ${activeTab === "strengths" ? "bg-emerald-500" : ""}
-                      ${activeTab === "weaknesses" ? "bg-rose-500" : ""}
-                      ${activeTab === "improvements" ? "bg-blue-500" : ""}
-                    `}
-                    ></span>
-                    <p className="text-slate-700">{item}</p>
-                  </li>
-                ))}
-              </ul>
-            </ScrollArea>
-          </div>
+                <ul className="space-y-4">
+                  {activeTab === "strengths" && currentAnalysis.strengths && 
+                    currentAnalysis.strengths.map((item, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="inline-block w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 bg-emerald-500"></span>
+                        <p className="text-slate-700">{item}</p>
+                      </li>
+                    ))
+                  }
+                  {activeTab === "improvements" && currentAnalysis.Areas_of_Improvment && 
+                    currentAnalysis.Areas_of_Improvment.map((item, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="inline-block w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 bg-amber-500"></span>
+                        <p className="text-slate-700">{item}</p>
+                      </li>
+                    ))
+                  }
+                </ul>
+              </ScrollArea>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center p-12">
+              <p className="text-slate-600">No analysis data available</p>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

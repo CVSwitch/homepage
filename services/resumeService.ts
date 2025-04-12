@@ -17,10 +17,14 @@ interface UserDataResponse {
   status: number;
 }
 
+interface ResumeAnalysis {
+  Areas_of_Improvment: string[];
+  strengths: string[];
+}
+
 export const resumeService = {
   async getUserResumes(userId: string): Promise<Resume[]> {
     try {
-      userId = 'laiZltBIPFP1yGGFxwsvSVzKyPL2'
       const response = await fetch(`http://localhost:4400/api/v1/fetchuserdata?user_id=${userId}`);
       
       if (!response.ok) {
@@ -109,7 +113,6 @@ export const resumeService = {
 
   async getLinkedInSuggestions(userId: string, resumeId: string): Promise<any> {
     try {
-      userId = 'laiZltBIPFP1yGGFxwsvSVzKyPL2'
       const response = await fetch(`http://localhost:4400/api/v1/linkedin-suggestions?user_id=${userId}&resume_id=${resumeId}`, {
         method: 'GET',
         headers: {
@@ -125,6 +128,63 @@ export const resumeService = {
       return data; // Return the LinkedIn suggestions data
     } catch (error) {
       console.error('Error in getLinkedInSuggestions:', error);
+      throw error;
+    }
+  },
+
+  async analyzeResume(userId: string, jsonUrl: string): Promise<ResumeAnalysis> {
+    try {
+      const urlParts = jsonUrl.split('cvswitch-54227.appspot.com/');
+      const fullPath = urlParts[1];
+      
+      console.log('Request parameters:', { userId, jsonUrl, fullPath });
+
+      // First API call to analyze and get the cloud file path
+      const analyzeResponse = await fetch(
+        `http://localhost:4400/api/v1/analyzeparsedjson?user_id=${userId}&cloud_file_path=${encodeURIComponent(fullPath)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const analyzeResult = await analyzeResponse.json();
+      console.log('Analyze API Response:', analyzeResult);
+
+      if (!analyzeResult.data || !analyzeResult.data.cloud_file_path) {
+        throw new Error('No analysis file path received');
+      }
+
+      // Second API call to fetch the actual analysis JSON
+      const fetchAnalysisResponse = await fetch(
+        `http://localhost:4400/api/v1/fetchanalyzedjson?user_id=${userId}&cloud_file_path=${encodeURIComponent(analyzeResult.data.cloud_file_path)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const fetchResult = await fetchAnalysisResponse.json();
+      console.log('Fetch Analysis API Response:', fetchResult);
+
+      if (!fetchResult.data) {
+        throw new Error('No analysis data received');
+      }
+
+      // Return the analysis data
+      const analysisData = {
+        Areas_of_Improvment: fetchResult.data.Areas_of_Improvment || [],
+        strengths: fetchResult.data.strengths || []
+      };
+      console.log('Final Analysis Data:', analysisData);
+
+      return analysisData;
+    } catch (error) {
+      console.error('Error in analyzeResume:', error);
       throw error;
     }
   },
