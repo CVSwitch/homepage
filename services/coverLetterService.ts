@@ -1,16 +1,22 @@
 import { API_CONFIG } from '@/config/api';
+import { pdfParserService } from './pdfParserService'; // Import the parser service
 
-interface CoverLetter {
+export interface CoverLetter {
   id: string;
   name: string;
   lastModified: string;
   url?: string;
   cloudPath?: string;
+  parsingStatus?: "parsing" | "completed" | undefined;
 }
 
 interface UserDataResponse {
   data: {
-    uploaded_cover_letter?: Array<{
+    cover_letter?: Array<{
+      cloud_path: string;
+      public_url: string;
+    }>;
+    parsed_cover_letter_json?: Array<{
       cloud_path: string;
       public_url: string;
     }>;
@@ -26,7 +32,7 @@ export const coverLetterService = {
       console.log('Fetching cover letters for user:', userId);
       
       const response = await fetch(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PDF_TO_PARSED_JSON}?user_id=${userId}`
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FETCH_USER_DATA}?user_id=${userId}`
       );
       
       if (!response.ok) {
@@ -34,25 +40,42 @@ export const coverLetterService = {
       }
       
       const data = await response.json() as UserDataResponse;
-      console.log('API Response:', data); // Debug log
+      console.log('API Response for cover letters:', data);
       
-      // Check if we have cover letters in the response
-      if (data.data && Array.isArray(data.data.uploaded_cover_letter)) {
-        return data.data.uploaded_cover_letter.map((coverLetter, index) => {
-          const cloudPath = coverLetter.cloud_path || '';
-          const fileName = cloudPath.split('/').pop() || `Cover Letter ${index + 1}`;
-          
-          return {
-            id: index.toString(),
-            name: fileName,
-            lastModified: new Date().toISOString().split('T')[0],
-            url: coverLetter.public_url,
-            cloudPath: coverLetter.cloud_path,
-          };
-        });
+      if (data.data && Array.isArray(data.data.cover_letter) && data.data.cover_letter.length > 0) {
+        const parsedJsonMap = new Map();
+        if (data.data.parsed_cover_letter_json) {
+          data.data.parsed_cover_letter_json.forEach(json => {
+            const cloudPath = json.cloud_path || '';
+            const baseName = cloudPath.split('/').pop()?.split('.')[0] || '';
+            parsedJsonMap.set(baseName, json.public_url);
+          });
+        }
+
+        return data.data.cover_letter
+          .filter(coverLetter => {
+            return coverLetter.cloud_path.endsWith('.pdf');
+          })
+          .map((coverLetter, index) => {
+            const cloudPath = coverLetter.cloud_path || '';
+            const fileName = cloudPath.split('/').pop() || `Cover Letter ${index + 1}`;
+            
+            const timestamp = fileName.split('.')[0];
+            const jsonUrl = parsedJsonMap.get(timestamp) || null;
+            
+            return {
+              id: index.toString(),
+              name: fileName,
+              lastModified: new Date().toISOString().split('T')[0],
+              url: coverLetter.public_url,
+              cloudPath: coverLetter.cloud_path,
+              jsonUrl: jsonUrl,
+              parsingStatus: jsonUrl ? "completed" : "parsing"
+            };
+          });
       }
       
-      console.log('No cover letters found in response');
+      console.log('No cover letters found in response or empty array');
       return [];
     } catch (error) {
       console.error('Error in getUserCoverLetters:', error);
@@ -64,6 +87,8 @@ export const coverLetterService = {
     try {
       const formData = new FormData();
       formData.append('file', file);
+      
+      console.log('Uploading cover letter for user:', userId);
       
       const response = await fetch(
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD_COVER_LETTER}?user_id=${userId}`,
@@ -79,13 +104,28 @@ export const coverLetterService = {
       }
       
       const result = await response.json();
+      console.log('Upload cover letter response:', result);
+      
       const newCoverLetter = {
         id: Date.now().toString(),
         name: result.data.file_name,
         lastModified: new Date().toISOString().split('T')[0],
         url: result.data.public_url,
         cloudPath: result.data.cloud_file_path,
+        parsingStatus: "parsing" as const
       };
+      
+      // Trigger PDF parsing if needed
+      if (newCoverLetter.cloudPath) {
+        setTimeout(async () => {
+          try {
+            // Call the parsing endpoint if you have one
+            // await pdfParserService.convertCoverLetterPdfToJson(userId, newCoverLetter.cloudPath!);
+          } catch (error) {
+            console.error('Error parsing cover letter:', error);
+          }
+        }, 2000);
+      }
       
       return newCoverLetter;
     } catch (error) {

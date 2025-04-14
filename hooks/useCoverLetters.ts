@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { coverLetterService } from '@/services/coverLetterService';
+import { coverLetterService, type CoverLetter } from '@/services/coverLetterService';
 
 export function useCoverLetters(userId: string | undefined) {
   const [coverLetters, setCoverLetters] = useState<CoverLetter[]>([]);
@@ -38,6 +38,7 @@ export function useCoverLetters(userId: string | undefined) {
     setError(null);
     try {
       const newCoverLetter = await coverLetterService.uploadCoverLetter(userId, file);
+      console.log('Uploaded new cover letter:', newCoverLetter);
       setCoverLetters(prev => [...prev, newCoverLetter]);
       return newCoverLetter;
     } catch (error) {

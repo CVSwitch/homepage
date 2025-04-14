@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 
 export default function LandingPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
@@ -24,7 +24,6 @@ export default function LandingPage() {
       }
     } catch (error) {
       console.error('Error signing in with Google:', error);
-      // You might want to show an error message to the user here
     } finally {
       setLoading(false);
     }

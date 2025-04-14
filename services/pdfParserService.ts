@@ -35,5 +35,31 @@ export const pdfParserService = {
       console.error('Error converting PDF to JSON:', error);
       return null;
     }
-  }
+  },
+
+  // New function for cover letters
+  async convertCoverLetterPdfToJson(userId: string, cloudPath: string): Promise<any> {
+    try {
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PDF_TO_PARSED_COVER_LETTER_JSON}?user_id=${userId}&cloud_file_path=${encodeURIComponent(cloudPath)}`,
+        {
+          method: 'GET', // Or POST if required by your API
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to trigger Cover Letter PDF to JSON conversion: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Cover Letter PDF to JSON Conversion Triggered:', result);
+      return result;
+    } catch (error) {
+      console.error('Error triggering Cover Letter PDF to JSON conversion:', error);
+      throw error;
+    }
+  },
 }; 
