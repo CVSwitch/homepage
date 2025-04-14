@@ -14,26 +14,33 @@ export const pdfParserService = {
   /**
    * Converts a PDF file to parsed JSON format
    * @param userId The user ID
-   * @param pdfPath The cloud path of the PDF file
+   * @param cloudPath The cloud path of the PDF file
    * @returns The public URL of the parsed JSON file, or null if conversion failed
    */
-  async convertPdfToJson(userId: string, pdfPath: string): Promise<string | null> {
+  async convertPdfToJson(userId: string, cloudPath: string): Promise<any> {
     try {
-      const response = await fetch(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FETCH_USER_DATA}?user_id=${userId}&path_pdf_url=${pdfPath}`
-      );
+      console.log('Starting PDF to JSON conversion for:', cloudPath);
       
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PDF_TO_PARSED_JSON}?user_id=${userId}&cloud_file_path=${encodeURIComponent(cloudPath)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
       if (!response.ok) {
         throw new Error(`Failed to convert PDF to JSON: ${response.status}`);
       }
-      
-      const result = await response.json() as ParsedJsonResponse;
-      console.log('PDF converted to JSON successfully:', result);
-      
-      return result.data.path_public_url;
+
+      const result = await response.json();
+      console.log('PDF to JSON conversion initiated:', result);
+      return result;
     } catch (error) {
-      console.error('Error converting PDF to JSON:', error);
-      return null;
+      console.error('Error in convertPdfToJson:', error);
+      throw error;
     }
   },
 

@@ -61,24 +61,47 @@ export function ResumeSection() {
     if (event.target.files && event.target.files[0] && user) {
       const file = event.target.files[0];
       setSelectedFile(file);
-      setParsingStatus("idle");
-      
-      // Upload the resume
-      await uploadResume(file);
-      
-      // Show parsing status
       setParsingStatus("parsing");
       
-      // Simulate parsing completion after 5 seconds (adjust based on actual parsing time)
-      setTimeout(() => {
-        setParsingStatus("completed");
-      }, 5000);
+      try {
+        // Upload and initiate parsing
+        const uploadedResume = await uploadResume(file);
+        console.log('Resume uploaded and parsing initiated:', uploadedResume);
+        
+        // Check parsing status periodically
+        const checkParsingStatus = setInterval(async () => {
+          const updatedResumes = await resumeService.getUserResumes(user.uid);
+          const uploadedResumeStatus = updatedResumes.find(r => r.id === uploadedResume.id);
+          
+          if (uploadedResumeStatus?.parsingStatus === "completed") {
+            setParsingStatus("completed");
+            clearInterval(checkParsingStatus);
+          }
+        }, 5000); // Check every 5 seconds
+        
+        // Clear interval after 2 minutes to prevent infinite checking
+        setTimeout(() => clearInterval(checkParsingStatus), 120000);
+        
+      } catch (error) {
+        console.error('Error uploading resume:', error);
+        setParsingStatus("idle");
+      }
     }
   };
 
   const handleAnalyze = async (resume: Resume) => {
-    if (!user?.uid || !resume.jsonUrl) {
-      setError('Missing required data for analysis');
+    if (!user?.uid) {
+      setError('Please sign in to analyze resumes');
+      return;
+    }
+
+    if (!resume.jsonUrl) {
+      setError('Resume is still being parsed. Please wait a moment and try again.');
+      return;
+    }
+
+    if (resume.parsingStatus !== "completed") {
+      setError('Please wait for the resume to be parsed before analyzing');
       return;
     }
 
@@ -87,8 +110,8 @@ export function ResumeSection() {
     setError(null);
     
     try {
+      console.log('Analyzing resume:', resume);
       const analysis = await resumeService.analyzeResume(user.uid, resume.jsonUrl);
-      console.log('Analysis response:', analysis); // Debug log
       setCurrentAnalysis(analysis);
     } catch (error) {
       console.error('Error analyzing resume:', error);
@@ -188,9 +211,48 @@ export function ResumeSection() {
                         onClick={() => handleAnalyze(resume)}
                         variant="default"
                         size="sm"
-                        className="bg-indigo-600 hover:bg-indigo-700"
+                        className={`
+                          relative overflow-hidden transition-all duration-300
+                          ${!resume.jsonUrl || resume.parsingStatus !== "completed"
+                            ? "bg-slate-300 cursor-not-allowed opacity-50"
+                            : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                          }
+                        `}
+                        disabled={!resume.jsonUrl || resume.parsingStatus !== "completed"}
                       >
-                        Analyze
+                        <div className="flex items-center gap-2">
+                          {resume.parsingStatus === "parsing" ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span>Parsing...</span>
+                            </>
+                          ) : !resume.jsonUrl ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span>Processing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg 
+                                className="w-4 h-4 animate-pulse" 
+                                fill="none" 
+                                viewBox="0 0 24 24" 
+                                stroke="currentColor"
+                              >
+                                <path 
+                                  strokeLinecap="round" 
+                                  strokeLinejoin="round" 
+                                  strokeWidth={2} 
+                                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0012 18.75c-1.03 0-1.96-.464-2.58-1.191l-.547-.547z" 
+                                />
+                              </svg>
+                              <span>Analyze</span>
+                            </>
+                          )}
+                        </div>
+                        {resume.jsonUrl && resume.parsingStatus === "completed" && (
+                          <div className="absolute inset-0 bg-white/10 group-hover:bg-transparent transition-colors duration-300" />
+                        )}
                       </Button>
 
                       <Link href={`/resume-optimizer/${resume.id}`}>

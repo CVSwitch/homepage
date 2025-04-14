@@ -40,7 +40,16 @@ module.exports = {
       boxShadow: {
         'card': '0 4px 6px rgba(0, 0, 0, 0.1)',
         'button': '0 2px 0 rgba(0, 0, 0, 0.1)',
-      }
+      },
+      animation: {
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      keyframes: {
+        pulse: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.5' },
+        },
+      },
     }
   },
   plugins: [],
