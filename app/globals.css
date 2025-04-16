@@ -29,6 +29,19 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    /* Primary brand color */
+    --cvs-primary: #2563eb;  /* Professional blue */
+    
+    /* Secondary colors for different resume sections */
+    --cvs-experience: #8b5cf6;  /* Purple for work experience */
+    --cvs-education: #14b8a6;   /* Teal for education */
+    --cvs-skills: #f59e0b;      /* Amber for skills */
+    
+    /* UI colors */
+    --cvs-success: #10b981;     /* Green for success states */
+    --cvs-error: #ef4444;       /* Red for errors */
+    --cvs-neutral: #6b7280;     /* Gray for less important elements */
+    --cvs-background: #f9fafb;  /* Light background */
   }
 
   .dark {
@@ -63,7 +76,7 @@
   }
   
   body {
-    @apply bg-background text-foreground;
+    @apply bg-cvs-background text-cvs-foreground;
     font-family: Arial, Helvetica, sans-serif;
   }
 }
@@ -88,4 +101,25 @@
 @page {
   size: A4;
   margin: 0.6cm;
+}
+
+/* Replace any instances of bg-background with bg-cvs-background */
+@layer components {
+  .card {
+    @apply bg-white rounded-xl shadow-md p-4;
+  }
+  
+  .btn-primary {
+    @apply px-4 py-2 bg-cvs-primary text-white font-medium rounded-lg hover:bg-blue-600 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 bg-white text-cvs-primary font-medium rounded-lg border border-cvs-primary hover:bg-blue-50 transition-colors;
+  }
+}
+
+@layer utilities {
+  .bg-background {
+    background-color: hsl(var(--background));
+  }
 }

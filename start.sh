@@ -1,0 +1,1 @@
+PORT=8501 npm run dev

@@ -143,9 +143,16 @@ export const resumeService = {
 
   async analyzeResume(userId: string, jsonUrl: string): Promise<ResumeAnalysis> {
     try {
+      // Check if we have a valid jsonUrl
+      if (!jsonUrl) {
+        throw new Error('Resume needs to be parsed before analysis');
+      }
+
       const urlParts = jsonUrl.split('cvswitch-54227.appspot.com/');
       const fullPath = urlParts[1];
       
+      console.log('Analyzing resume with path:', fullPath);
+
       const response = await fetch(
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ANALYZE_RESUME}?user_id=${userId}&cloud_file_path=${encodeURIComponent(fullPath)}`
       );
@@ -175,14 +182,10 @@ export const resumeService = {
         throw new Error('No analysis data received');
       }
 
-      // Return the analysis data
-      const analysisData = {
+      return {
         Areas_of_Improvment: fetchResult.data.Areas_of_Improvment || [],
         strengths: fetchResult.data.strengths || []
       };
-      console.log('Final Analysis Data:', analysisData);
-
-      return analysisData;
     } catch (error) {
       console.error('Error in analyzeResume:', error);
       throw error;
