@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://localhost:4400/',  // localhost:4400 to test in local  / https://api.cvswitch.com/ for production
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api.cvswitch.com/',  // localhost:4400 to test in local  / https://api.cvswitch.com/ for production
   ENDPOINTS: {
     FETCH_USER_DATA: '/api/v1/fetchuserdata',
     UPLOAD_COVER_LETTER: '/api/v1/uploadcoverletter',
