@@ -78,6 +78,8 @@ export default function TemplateDrawer({
           <LayoutTemplate className="h-4 w-4" />
         </Button>
       </DrawerTrigger>
+
+      
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>Choose Template</DrawerTitle>

@@ -63,7 +63,7 @@ export default function ResumePreview({ className, contentRef }: ResumePreviewPr
     >
       <div
         className={cn("space-y-6 p-6", !width && "invisible")}
-        style={{ zoom: (1 / 794) * width }}
+       // style={{ zoom: (1 / 794) * width }}
         ref={contentRef}
         id="resumePreviewContent"
       >

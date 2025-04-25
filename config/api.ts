@@ -8,5 +8,8 @@ export const API_CONFIG = {
     FETCH_ANALYZED_JSON: '/api/v1/fetchanalyzedjson',
     LINKEDIN_SUGGESTIONS: '/api/v1/linkedin-suggestions',
     PDF_TO_PARSED_JSON: '/api/v1/pdftoparsedjson',
+    HANDLE_EDITED_RESULT: '/api/v1/handleeditedresult',
+    GET_RESUME_DATA: '/api/v1/getresumedata',
+    DELETE_RESUME: '/api/v1/deleteresume',
   }
 }; 

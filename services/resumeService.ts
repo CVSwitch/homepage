@@ -7,6 +7,7 @@ interface UserDataResponse {
     uploaded_resume: Array<{
       cloud_path: string;
       public_url: string;
+      resume_id?: string;
     }>;
     parsed_resume_json: Array<{
       cloud_path: string;
@@ -59,10 +60,10 @@ export const resumeService = {
           const jsonUrl = parsedJsonMap.get(timestamp) || null;
           
           return {
-            id: index.toString(),
+            id: resume.id,
             name: fileName,
             lastModified: new Date().toISOString().split('T')[0],
-            url: resume.public_url,
+            url: resume.resume_url,
             cloudPath: resume.cloud_path,
             jsonUrl: jsonUrl,
             // If we have a jsonUrl, the resume has been parsed
