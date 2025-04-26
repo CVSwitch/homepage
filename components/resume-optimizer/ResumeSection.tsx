@@ -58,12 +58,13 @@ export function ResumeSection() {
   const [activeTab, setActiveTab] = useState<
     "strengths" | "weaknesses" | "improvements"
   >("strengths");
-  const [parsingStatus, setParsingStatus] = useState<"idle" | "parsing" | "completed">("idle");
+  const [parsingStatus, setParsingStatus] = useState<"idle" | "parsing" | "completed" | "failed">("idle");
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [currentAnalysis, setCurrentAnalysis] = useState<ResumeAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [resumeToDelete, setResumeToDelete] = useState<string | null>(null);
+  const [currentlyParsingResumeId, setCurrentlyParsingResumeId] = useState<string | null>(null);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0] && user) {
@@ -71,16 +72,41 @@ export function ResumeSection() {
       setSelectedFile(file);
       setParsingStatus("idle");
       
-      // Upload the resume
-      await uploadResume(file);
-      
-      // Show parsing status
-      setParsingStatus("parsing");
-      
-      // Simulate parsing completion after 5 seconds (adjust based on actual parsing time)
-      setTimeout(() => {
-        setParsingStatus("completed");
-      }, 5000);
+      try {
+        // Upload the resume
+        const uploadedResume = await uploadResume(file);
+        
+        // Show parsing status
+        setParsingStatus("parsing");
+        
+        if (uploadedResume?.data?.resume_id) {
+          const resumeId = uploadedResume?.data?.resume_id;
+          setCurrentlyParsingResumeId(resumeId);
+          
+          // Call parse_uploaded_resume endpoint
+          const parseResponse = await axios.get(
+            `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PARSE_UPLOADED_RESUME}?resume_id=${resumeId}&user_id=${user.uid}`
+          );
+          
+          if (parseResponse.status === 200) {
+            setParsingStatus("completed");
+            setCurrentlyParsingResumeId(null);
+          } else {
+            setParsingStatus("failed");
+            setCurrentlyParsingResumeId(null);
+            setError("Failed to parse resume. Please try again.");
+          }
+        } else {
+          setParsingStatus("failed");
+          setCurrentlyParsingResumeId(null);
+          setError("Failed to get resume ID. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error in resume upload/parsing:", error);
+        setParsingStatus("failed");
+        setCurrentlyParsingResumeId(null);
+        setError("An error occurred while processing your resume. Please try again.");
+      }
     }
   };
 
@@ -218,7 +244,9 @@ export function ResumeSection() {
                 {resumes.map((resume) => (
                   <div
                     key={resume.id}
-                    className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                    className={`flex items-center justify-between p-3 bg-slate-50 rounded-lg ${
+                      currentlyParsingResumeId === resume.id ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   >
                     <div className="flex items-center gap-3">
                       <DocumentTextIcon className="w-6 h-6 text-indigo-600" />
@@ -227,6 +255,9 @@ export function ResumeSection() {
                         <p className="text-sm text-slate-500">
                           Last modified: {resume.lastModified}
                         </p>
+                        {currentlyParsingResumeId === resume.id && (
+                          <p className="text-sm text-amber-600">Parsing in progress...</p>
+                        )}
                       </div>
                     </div>
 
@@ -236,12 +267,18 @@ export function ResumeSection() {
                         variant="default"
                         size="sm"
                         className="bg-indigo-600 hover:bg-indigo-700"
+                        disabled={currentlyParsingResumeId === resume.id}
                       >
                         Analyze
                       </Button>
 
                       <Link href={`/editor-app/editor?resume_id=${resume.id}`}>
-                        <Button variant="ghost" size="icon" className="text-slate-600 hover:bg-slate-100">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-slate-600 hover:bg-slate-100"
+                          disabled={currentlyParsingResumeId === resume.id}
+                        >
                           <PencilIcon className="w-5 h-5" />
                         </Button>
                       </Link>
@@ -252,6 +289,7 @@ export function ResumeSection() {
                           size="icon"
                           className="text-slate-600 hover:bg-slate-100"
                           onClick={() => window.open(resume.url, '_blank')}
+                          disabled={currentlyParsingResumeId === resume.id}
                         >
                           <ArrowDownTrayIcon className="w-5 h-5" />
                         </Button>
@@ -262,6 +300,7 @@ export function ResumeSection() {
                         size="icon"
                         onClick={() => handleDeleteClick(resume.id)}
                         className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                        disabled={currentlyParsingResumeId === resume.id}
                       >
                         <TrashIcon className="w-5 h-5" />
                       </Button>

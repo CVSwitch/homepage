@@ -97,21 +97,21 @@ export const resumeService = {
       }
       
       const result = await response.json();
-      const newResume = {
-        id: Date.now().toString(),
-        name: result.data.file_name,
-        lastModified: new Date().toISOString().split('T')[0],
-        url: result.data.public_url,
-        cloudPath: result.data.cloud_file_path,
-        parsingStatus: "parsing" as const
-      };
+      // const newResume = {
+      //   id: Date.now().toString(),
+      //   name: result.data.file_name,
+      //   lastModified: new Date().toISOString().split('T')[0],
+      //   url: result.data.public_url,
+      //   cloudPath: result.data.cloud_file_path,
+      //   parsingStatus: "parsing" as const
+      // };
       
       // Call PDF to parsed JSON with a 2-second delay
-      setTimeout(async () => {
-        await pdfParserService.convertPdfToJson(userId, newResume.cloudPath || '');
-      }, 2000);
+      // setTimeout(async () => {
+      //   await pdfParserService.convertPdfToJson(userId, newResume.cloudPath || '');
+      // }, 2000);
       
-      return newResume;
+      return result;
     } catch (error) {
       console.error('Error in uploadResume:', error);
       throw error;
