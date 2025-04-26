@@ -11,5 +11,6 @@ export const API_CONFIG = {
     HANDLE_EDITED_RESULT: '/api/v1/handleeditedresult',
     GET_RESUME_DATA: '/api/v1/getresumedata',
     DELETE_RESUME: '/api/v1/deleteresume',
+    PARSE_UPLOADED_RESUME: '/api/v1/parse_uploaded_resume',
   }
 }; 
