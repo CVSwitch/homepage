@@ -35,8 +35,9 @@ export function useResumes(userId: string | undefined) {
     
     try {
       setUploadLoading(true);
-      const newResume = await resumeService.uploadResume(userId, file);
-      setResumes(prev => [newResume, ...prev]);
+      await resumeService.uploadResume(userId, file);
+      fetchResumes(userId); // Refresh resumes after upload
+      // setResumes(prev => [newResume, ...prev]);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to upload resume'));
       console.error('Error uploading resume:', err);

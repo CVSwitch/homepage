@@ -6,6 +6,7 @@ import {
   PencilIcon,
   ArrowDownTrayIcon,
   DocumentTextIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
@@ -14,6 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,6 +23,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useResumes } from "@/hooks/useResumes";
 import { Loader2 } from "lucide-react";
 import { resumeService } from "@/services/resumeService";
+import axios from "axios";
+import { API_CONFIG } from "@/config/api";
 
 interface Resume {
   id: string;
@@ -45,6 +49,8 @@ export function ResumeSection() {
     uploadResume, 
     uploadLoading 
   } = useResumes(user?.uid);
+
+  console.log(resumes, 'resumes')
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -56,6 +62,8 @@ export function ResumeSection() {
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [currentAnalysis, setCurrentAnalysis] = useState<ResumeAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [resumeToDelete, setResumeToDelete] = useState<string | null>(null);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0] && user) {
@@ -95,6 +103,45 @@ export function ResumeSection() {
       setError(error instanceof Error ? error.message : 'An error occurred while analyzing the resume');
     } finally {
       setAnalysisLoading(false);
+    }
+  };
+
+  const handleDelete = async (resumeId: string) => {
+    if (!user?.uid) {
+      setError('User not authenticated');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DELETE_RESUME}`,
+        {
+          user_id: user.uid,
+          resume_id: resumeId
+        }
+      );
+
+      if (response.status === 200) {
+        // Refresh the resumes list
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Error deleting resume:", error);
+      setError('Failed to delete resume. Please try again.');
+      setTimeout(() => setError(null), 2000);
+    }
+  };
+
+  const handleDeleteClick = (resumeId: string) => {
+    setResumeToDelete(resumeId);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (resumeToDelete) {
+      await handleDelete(resumeToDelete);
+      setShowDeleteModal(false);
+      setResumeToDelete(null);
     }
   };
 
@@ -193,7 +240,7 @@ export function ResumeSection() {
                         Analyze
                       </Button>
 
-                      <Link href={`/resume-optimizer/${resume.id}`}>
+                      <Link href={`/editor-app/editor?resume_id=${resume.id}`}>
                         <Button variant="ghost" size="icon" className="text-slate-600 hover:bg-slate-100">
                           <PencilIcon className="w-5 h-5" />
                         </Button>
@@ -209,6 +256,15 @@ export function ResumeSection() {
                           <ArrowDownTrayIcon className="w-5 h-5" />
                         </Button>
                       )}
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteClick(resume.id)}
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -224,6 +280,35 @@ export function ResumeSection() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Resume</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-slate-600">
+              Are you sure you want to delete this resume? This action cannot be undone.
+            </p>
+          </div>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={() => setShowDeleteModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Analysis Modal */}
       <Dialog open={showAnalysisModal} onOpenChange={setShowAnalysisModal}>
