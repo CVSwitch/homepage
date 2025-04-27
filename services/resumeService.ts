@@ -61,7 +61,7 @@ export const resumeService = {
           
           return {
             id: resume.id,
-            name: fileName,
+            name: resume.file_name,
             lastModified: new Date().toISOString().split('T')[0],
             url: resume.resume_url,
             cloudPath: resume.cloud_path,
