@@ -7,6 +7,7 @@ import {
   ArrowDownTrayIcon,
   DocumentTextIcon,
   TrashIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
@@ -25,6 +26,14 @@ import { Loader2 } from "lucide-react";
 import { resumeService } from "@/services/resumeService";
 import axios from "axios";
 import { API_CONFIG } from "@/config/api";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Resume {
   id: string;
@@ -34,11 +43,18 @@ interface Resume {
   cloudPath?: string;
   jsonUrl?: string | null;
   parsingStatus?: "parsing" | "completed" | "failed" | undefined;
+  isTailored?: boolean;
+  originalResumeId?: string;
 }
 
 interface ResumeAnalysis {
   Areas_of_Improvment: string[];
   strengths: string[];
+}
+
+interface TailorModalProps {
+  resumes: Resume[];
+  onTailor: (jobDescription: string, resumeId: string) => void;
 }
 
 export function ResumeSection() {
@@ -65,6 +81,7 @@ export function ResumeSection() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [resumeToDelete, setResumeToDelete] = useState<string | null>(null);
   const [currentlyParsingResumeId, setCurrentlyParsingResumeId] = useState<string | null>(null);
+  const [showTailorSuccessModal, setShowTailorSuccessModal] = useState(false);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0] && user) {
@@ -171,6 +188,45 @@ export function ResumeSection() {
     }
   };
 
+  const handleTailorResume = async (jobDescription: string, resumeId: string) => {
+    if (!user?.uid) {
+      setError('Please sign in to tailor your resume');
+      return;
+    }
+
+    setError(null);
+    
+    try {
+      const response = await axios.post(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.TAILOR_RESUME}`,
+        {
+          user_id: user.uid,
+          resume_id: resumeId,
+          job_description: jobDescription
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Tailor resume response:', response.data);
+
+      if (response.data.public_url) {
+        // Instead of opening in new tab, redirect to editor with the JSON URL
+        const editorUrl = `/editor-app/editor?json_url=${encodeURIComponent(response.data.public_url)}`;
+        window.location.href = editorUrl;
+      }
+
+      setShowTailorSuccessModal(true);
+
+    } catch (error) {
+      console.error('Error tailoring resume:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred while tailoring the resume');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Sidebar />
@@ -181,7 +237,7 @@ export function ResumeSection() {
           </h1>
 
           {/* Primary Options */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
             <div
               onClick={() => fileInputRef.current?.click()}
               className="flex flex-col items-center justify-center p-6 bg-white rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-300 transition-colors cursor-pointer"
@@ -215,6 +271,11 @@ export function ResumeSection() {
                 </p>
               </div>
             </Link>
+
+            <TailorModal 
+              resumes={resumes} 
+              onTailor={handleTailorResume}
+            />
           </div>
           
           {/* Parsing Status Message */}
@@ -251,12 +312,25 @@ export function ResumeSection() {
                     <div className="flex items-center gap-3">
                       <DocumentTextIcon className="w-6 h-6 text-indigo-600" />
                       <div>
-                        <p className="font-medium text-slate-800">{resume.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-slate-800">{resume.name}</p>
+                          {resume.isTailored && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                              <SparklesIcon className="w-3 h-3 mr-1" />
+                              Tailored
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-slate-500">
                           Last modified: {resume.lastModified}
                         </p>
                         {currentlyParsingResumeId === resume.id && (
                           <p className="text-sm text-amber-600">Parsing in progress...</p>
+                        )}
+                        {resume.isTailored && resume.originalResumeId && (
+                          <p className="text-xs text-slate-500">
+                            Tailored from: {resumes.find(r => r.id === resume.originalResumeId)?.name}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -426,6 +500,152 @@ export function ResumeSection() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Tailor Success Modal */}
+      <Dialog open={showTailorSuccessModal} onOpenChange={setShowTailorSuccessModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-slate-800">
+              Resume Tailored Successfully!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-slate-600">
+              Your resume has been tailored for the job description. You will be redirected to the editor to review and make any final adjustments.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setShowTailorSuccessModal(false)}
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+function TailorModal({ resumes, onTailor }: TailorModalProps) {
+  const [showTailorModal, setShowTailorModal] = useState(false);
+  const [jobDescription, setJobDescription] = useState("");
+  const [selectedResumeId, setSelectedResumeId] = useState("");
+  const [isTailoring, setIsTailoring] = useState(false);
+
+  const handleTailor = async () => {
+    if (!jobDescription.trim() || !selectedResumeId) {
+      return;
+    }
+    setIsTailoring(true);
+    try {
+      await onTailor(jobDescription, selectedResumeId);
+      // Clear the form after successful tailoring
+      setJobDescription("");
+      setSelectedResumeId("");
+      setShowTailorModal(false);
+    } finally {
+      setIsTailoring(false);
+    }
+  };
+
+  return (
+    <>
+      <div
+        onClick={() => setShowTailorModal(true)}
+        className="flex flex-col items-center justify-center p-6 bg-white rounded-xl border-2 border-slate-200 hover:border-indigo-300 transition-colors cursor-pointer"
+      >
+        <SparklesIcon className="w-12 h-12 text-indigo-600 mb-3" />
+        <h3 className="font-semibold text-lg mb-1 text-slate-800">
+          Tailor Resume
+        </h3>
+        <p className="text-slate-500 text-center">
+          Customize your resume for specific job descriptions
+        </p>
+      </div>
+
+      <Dialog open={showTailorModal} onOpenChange={setShowTailorModal}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-slate-800">
+              Tailor Your Resume
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">
+                Paste Job Description
+              </label>
+              <Textarea
+                placeholder="Paste the job description here..."
+                value={jobDescription}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setJobDescription(e.target.value)}
+                className="min-h-[150px] resize-none border-slate-200 focus:border-indigo-300 focus:ring-indigo-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">
+                Select Resume
+              </label>
+              <Select 
+                value={selectedResumeId} 
+                onValueChange={setSelectedResumeId}
+              >
+                <SelectTrigger className="w-full border-slate-200 focus:border-indigo-300 focus:ring-indigo-300">
+                  <SelectValue placeholder="Choose a resume">
+                    {selectedResumeId && (
+                      <div className="flex items-center gap-2">
+                        <DocumentTextIcon className="w-4 h-4 text-slate-500" />
+                        <span>{resumes.find(r => r.id === selectedResumeId)?.name}</span>
+                      </div>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-slate-200 shadow-lg">
+                  {resumes.map((resume) => (
+                    <SelectItem 
+                      key={resume.id} 
+                      value={resume.id}
+                      className="relative flex items-center gap-2 px-2 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 data-[state=checked]:bg-indigo-50 data-[state=checked]:text-indigo-700 transition-colors duration-150"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <DocumentTextIcon className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                        <div className="flex flex-col">
+                          <span className="font-medium">{resume.name}</span>
+                          <span className="text-xs text-slate-500">
+                            Last modified: {resume.lastModified}
+                          </span>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button
+              onClick={handleTailor}
+              disabled={!jobDescription.trim() || !selectedResumeId || isTailoring}
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
+            >
+              {isTailoring ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Tailoring Resume...
+                </>
+              ) : (
+                <>
+                  <SparklesIcon className="w-4 h-4 mr-2" />
+                  Tailor Resume
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
