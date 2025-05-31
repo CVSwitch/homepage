@@ -58,13 +58,22 @@ export default function WorkExperienceForm() {
     resumeDataRef.current = resumeData;
   }, [resumeData]);
 
+  function stripHtml(html: string): string {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
+  }
+
   useEffect(() => {
     const updateResumeData = debounce((values: WorkExperienceFormValues) => {
       resumeDataRef.current = {
         ...resumeDataRef.current,
-        workExperiences: values.workExperiences || [],
+        workExperiences: (values.workExperiences || []).map(exp => ({
+          ...exp,
+          description: stripHtml(exp.description || ""),
+          description_text: stripHtml(exp.description_text || ""),
+        })),
       };
-
       setResumeData(resumeDataRef.current);
     }, 300);
 
@@ -102,16 +111,14 @@ export default function WorkExperienceForm() {
       </CardHeader>
 
       <div
-        className={`transition-all duration-700 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-700 ease-in-out overflow-hidden ${isOpen ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent>
           <Form {...form}>
             <form className="space-y-4">
               {fields.map((field, index) => (
                 <WorkExperienceItem
-                  id={field.id}
                   key={field.id}
                   index={index}
                   form={form}
@@ -148,7 +155,6 @@ export default function WorkExperienceForm() {
 }
 
 interface WorkExperienceItemProps {
-  id: string;
   form: UseFormReturn<WorkExperienceFormValues>;
   index: number;
   remove: (index: number) => void;
@@ -157,7 +163,6 @@ interface WorkExperienceItemProps {
 }
 
 function WorkExperienceItem({
-  id,
   form,
   index,
   remove,
@@ -224,9 +229,8 @@ function WorkExperienceItem({
       </CardHeader>
 
       <div
-        className={`transition-all duration-700 ease-in-out overflow-hidden ${
-          isExpanded ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-700 ease-in-out overflow-hidden ${isExpanded ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent className="space-y-4">
           <FormField

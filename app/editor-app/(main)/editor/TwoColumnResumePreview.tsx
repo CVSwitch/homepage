@@ -2,10 +2,10 @@ import useDimensions from "@/hooks/useDimensions";
 import { cn } from "@/lib/utils";
 import { memo, useMemo, useRef } from "react";
 import { useResume } from "./forms/ResumeProvider";
-import { Phone, Mail, Linkedin, Github, ExternalLink } from "lucide-react";
+import { Phone, Mail, Linkedin, Github } from "lucide-react";
 import { formatDate } from "date-fns/format";
 import { ResumeValues } from "@/lib/validation";
-import DOMPurify from "dompurify";
+import EditableText from "./components/EditableText";
 
 interface TwoColumnResumePreviewProps {
   className?: string;
@@ -28,6 +28,7 @@ interface ResumeSectionProps {
 interface GenericSectionProps {
   title: string;
   data?: { description?: string; description_text?: string };
+  onEdit?: (value: string) => void;
 }
 
 export default function TwoColumnResumePreview({ className, contentRef }: TwoColumnResumePreviewProps) {
@@ -90,67 +91,119 @@ export default function TwoColumnResumePreview({ className, contentRef }: TwoCol
 }
 
 const PersonalInfoHeader = memo(({ personalInfo }: ResumeSectionProps) => {
-  const { firstname, lastname, email, phone, socials, city, country, summary } =
-    personalInfo || {};
+  const { resumeData, setResumeData } = useResume();
+  const { firstname, lastname, email, phone, socials, city, country, summary } = personalInfo || {};
   const { linkedin, github } = socials || {};
+
+  const handleEdit = (field: string, value: string) => {
+    if (field.startsWith('socials.')) {
+      const socialField = field.split('.')[1];
+      setResumeData({
+        ...resumeData,
+        personalInfo: {
+          ...resumeData.personalInfo,
+          socials: {
+            linkedin: resumeData.personalInfo?.socials?.linkedin || "",
+            github: resumeData.personalInfo?.socials?.github || "",
+            [socialField]: value
+          }
+        }
+      });
+    } else {
+      setResumeData({
+        ...resumeData,
+        personalInfo: {
+          ...resumeData.personalInfo,
+          socials: resumeData.personalInfo?.socials || { linkedin: "", github: "" },
+          [field]: value
+        }
+      });
+    }
+  };
 
   return (
     <div className="w-full break-words">
-      {/* Name */}
       <h1 className="text-3xl font-bold mb-2 break-words">
-        {firstname} {lastname}
+        <EditableText
+          value={firstname || ""}
+          onEdit={(value) => handleEdit("firstname", value)}
+          className="inline-block"
+        />{" "}
+        <EditableText
+          value={lastname || ""}
+          onEdit={(value) => handleEdit("lastname", value)}
+          className="inline-block"
+        />
       </h1>
-
-      {/* Contact Info & Location */}
       <div className="space-y-2 text-sm">
-        {/* Location */}
         {(city || country) && (
           <p className="text-gray-600 break-words">
-            {city}
+            <EditableText
+              value={city || ""}
+              onEdit={(value) => handleEdit("city", value)}
+              className="inline-block"
+            />
             {city && country ? ", " : ""}
-            {country}
+            <EditableText
+              value={country || ""}
+              onEdit={(value) => handleEdit("country", value)}
+              className="inline-block"
+            />
           </p>
         )}
-
-        {/* Contact Details */}
         <div className="space-y-1">
           {phone && (
             <p className="flex items-center gap-2">
               <Phone className="w-4 h-4 flex-shrink-0" />
-              <span className="break-all">{phone}</span>
+              <EditableText
+                value={phone}
+                onEdit={(value) => handleEdit("phone", value)}
+                className="break-all inline-block"
+              />
             </p>
           )}
-
           {email && (
             <p className="flex items-center gap-2">
               <Mail className="w-4 h-4 flex-shrink-0" />
-              <span className="break-all">{email}</span>
+              <EditableText
+                value={email}
+                onEdit={(value) => handleEdit("email", value)}
+                className="break-all inline-block"
+              />
             </p>
           )}
-
           {linkedin && (
             <p className="flex items-center gap-2">
               <Linkedin className="w-4 h-4 flex-shrink-0" />
-              <span className="break-all">{linkedin}</span>
+              <EditableText
+                value={linkedin}
+                onEdit={(value) => handleEdit("socials.linkedin", value)}
+                className="break-all inline-block"
+              />
             </p>
           )}
-
           {github && (
             <p className="flex items-center gap-2">
               <Github className="w-4 h-4 flex-shrink-0" />
-              <span className="break-all">{github}</span>
+              <EditableText
+                value={github}
+                onEdit={(value) => handleEdit("socials.github", value)}
+                className="break-all inline-block"
+              />
             </p>
           )}
         </div>
       </div>
-
-      {/* Summary Section */}
       {summary && (
         <div className="mt-4">
           <div className="w-full text-left space-y-1 break-inside-avoid">
             <p className="text-lg font-semibold break-words">Summary</p>
             <hr className="border-black border-1" />
-            <div className="whitespace-pre-line text-sm break-words">{summary}</div>
+            <EditableText
+              value={summary}
+              onEdit={(value) => handleEdit("summary", value)}
+              className="whitespace-pre-line text-sm"
+            />
           </div>
         </div>
       )}
@@ -159,41 +212,61 @@ const PersonalInfoHeader = memo(({ personalInfo }: ResumeSectionProps) => {
 });
 
 const WorkExperienceSection = memo(({ workExperiences }: ResumeSectionProps) => {
+  const { resumeData, setResumeData } = useResume();
   if (!workExperiences?.length) return null;
-
+  const handleEdit = (index: number, field: string, value: string) => {
+    const newExperiences = [...(resumeData.workExperiences || [])];
+    newExperiences[index] = {
+      ...newExperiences[index],
+      [field]: value
+    };
+    setResumeData({
+      ...resumeData,
+      workExperiences: newExperiences
+    });
+  };
   return (
     <div className="w-full">
       <p className="text-lg font-semibold break-words">Work Experience</p>
       <hr className="border-black border-1 mb-2" />
-
       {workExperiences.map((exp, index) => (
         <div key={index} className="break-inside-avoid mb-4">
           <div className="flex flex-col gap-1">
-            <div className="w-full">
-              <p className="text-md font-bold mt-1 break-words">{exp.name}</p>
-              {exp.startDate && (
-                <span className="text-sm text-gray-600 break-words">
-                  {formatDate(exp.startDate, "MM/yyyy")} -{" "}
-                  {exp.endDate ? formatDate(exp.endDate, "MM/yyyy") : "Present"}
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-col text-sm italic">
-              {exp.position && <p className="break-words">{exp.position}</p>}
-              {(exp.city || exp.country) && (
-                <p className="text-gray-600 break-words">
-                  {exp.city}
-                  {exp.city && exp.country ? ", " : ""}
-                  {exp.country}
-                </p>
-              )}
-            </div>
-
+            <EditableText
+              value={exp.name || ""}
+              onEdit={(value) => handleEdit(index, "name", value)}
+              className="text-md font-bold mt-1 break-words"
+            />
+            <EditableText
+              value={exp.position || ""}
+              onEdit={(value) => handleEdit(index, "position", value)}
+              className="text-sm italic break-words"
+            />
+            {(exp.city || exp.country) && (
+              <p className="text-sm italic text-right break-words">
+                <EditableText
+                  value={exp.city || ""}
+                  onEdit={(value) => handleEdit(index, "city", value)}
+                  className="inline-block"
+                />
+                {exp.city && exp.country ? ", " : ""}
+                <EditableText
+                  value={exp.country || ""}
+                  onEdit={(value) => handleEdit(index, "country", value)}
+                  className="inline-block"
+                />
+              </p>
+            )}
+            {exp.startDate && (
+              <span className="text-sm text-gray-600 break-words">
+                {formatDate(exp.startDate, "MM/yyyy")} - {exp.endDate ? formatDate(exp.endDate, "MM/yyyy") : "Present"}
+              </span>
+            )}
             {exp.description && (
-              <div
+              <EditableText
+                value={exp.description}
+                onEdit={(value) => handleEdit(index, "description", value)}
                 className="mt-2 text-sm break-words"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(exp.description) }}
               />
             )}
           </div>
@@ -204,40 +277,59 @@ const WorkExperienceSection = memo(({ workExperiences }: ResumeSectionProps) => 
 });
 
 const EducationSection = memo(({ education }: ResumeSectionProps) => {
+  const { resumeData, setResumeData } = useResume();
   if (!education?.length) return null;
-
+  const handleEdit = (index: number, field: string, value: string) => {
+    const newEducation = [...(resumeData.education || [])];
+    newEducation[index] = {
+      ...newEducation[index],
+      [field]: value
+    };
+    setResumeData({
+      ...resumeData,
+      education: newEducation
+    });
+  };
   return (
     <div className="w-full break-inside-avoid">
       <p className="text-lg font-semibold break-words">Education</p>
       <hr className="border-black border-1 mb-2" />
-
       {education.map((edu, index) => (
         <div key={index} className="space-y-2 mb-4">
-          <div className="flex flex-col gap-1">
-            <div className="w-full">
-              <p className="text-md font-bold break-words">{edu.institution}</p>
-              {edu.startDate && (
-                <span className="text-sm text-gray-600 break-words">
-                  {formatDate(edu.startDate, "MM/yyyy")} -{" "}
-                  {edu.endDate ? formatDate(edu.endDate, "MM/yyyy") : "Present"}
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-col text-sm italic">
-              {edu.studyType && <p className="break-words">{edu.studyType}</p>}
-              {edu.area && <p className="text-gray-600 break-words">{edu.area}</p>}
-            </div>
-
-            {edu.score && <p className="text-sm break-words">Score: {edu.score}</p>}
-
-            {edu.courses && (
-              <div
-                className="mt-2 text-sm break-words"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(edu.courses) }}
-              />
-            )}
-          </div>
+          <EditableText
+            value={edu.institution || ""}
+            onEdit={(value) => handleEdit(index, "institution", value)}
+            className="text-md font-bold break-words"
+          />
+          <EditableText
+            value={edu.studyType || ""}
+            onEdit={(value) => handleEdit(index, "studyType", value)}
+            className="text-sm italic break-words"
+          />
+          <EditableText
+            value={edu.area || ""}
+            onEdit={(value) => handleEdit(index, "area", value)}
+            className="text-sm italic break-words"
+          />
+          {edu.startDate && (
+            <span className="text-sm text-gray-600 break-words">
+              {formatDate(edu.startDate, "MM/yyyy")} - {edu.endDate ? formatDate(edu.endDate, "MM/yyyy") : "Present"}
+            </span>
+          )}
+          {edu.score && (
+            <EditableText
+              value={edu.score}
+              onEdit={(value) => handleEdit(index, "score", value)}
+              className="text-sm break-words"
+            />
+          )}
+          {edu.courses && (
+            <EditableText
+              value={edu.courses}
+              onEdit={(value) => handleEdit(index, "courses", value)}
+              className="mt-2 text-sm break-words"
+            />
+          )}
         </div>
       ))}
     </div>
@@ -245,48 +337,49 @@ const EducationSection = memo(({ education }: ResumeSectionProps) => {
 });
 
 const ProjectsSection = memo(({ projects }: ResumeSectionProps) => {
+  const { resumeData, setResumeData } = useResume();
   if (!projects?.length) return null;
-
+  const handleEdit = (index: number, field: string, value: string) => {
+    const newProjects = [...(resumeData.projects || [])];
+    newProjects[index] = {
+      ...newProjects[index],
+      [field]: value
+    };
+    setResumeData({
+      ...resumeData,
+      projects: newProjects
+    });
+  };
   return (
     <div className="w-full">
       <p className="text-lg font-semibold break-words">Projects</p>
       <hr className="border-black border-1 mb-2" />
-
       {projects.map((project, index) => (
         <div key={index} className="break-inside-avoid space-y-2 mb-4">
-          <div className="flex flex-col gap-1">
-            <div className="w-full">
-              <p className="text-md font-bold break-words">{project.title}</p>
-              {project.startDate && (
-                <span className="text-sm text-gray-600 break-words">
-                  {formatDate(project.startDate, "MM/yyyy")} -{" "}
-                  {project.endDate
-                    ? formatDate(project.endDate, "MM/yyyy")
-                    : "Present"}
-                </span>
-              )}
-            </div>
-
-            {project.link && (
-              <p className="text-sm text-blue-600">
-                <a
-                  href={project.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 break-all"
-                >
-                  View Project <ExternalLink className="w-4 h-4 flex-shrink-0" />
-                </a>
-              </p>
-            )}
-
-            {project.description && (
-              <div
-                className="mt-2 text-sm break-words"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(project.description) }}
-              />
-            )}
-          </div>
+          <EditableText
+            value={project.title || ""}
+            onEdit={(value) => handleEdit(index, "title", value)}
+            className="text-md font-bold break-words"
+          />
+          {project.startDate && (
+            <span className="text-sm text-gray-600 break-words">
+              {formatDate(project.startDate, "MM/yyyy")} - {project.endDate ? formatDate(project.endDate, "MM/yyyy") : "Present"}
+            </span>
+          )}
+          {project.link && (
+            <EditableText
+              value={project.link}
+              onEdit={(value) => handleEdit(index, "link", value)}
+              className="text-sm text-blue-600 hover:underline break-all inline-block max-w-full"
+            />
+          )}
+          {project.description && (
+            <EditableText
+              value={project.description}
+              onEdit={(value) => handleEdit(index, "description", value)}
+              className="mt-2 text-sm break-words"
+            />
+          )}
         </div>
       ))}
     </div>
@@ -294,44 +387,117 @@ const ProjectsSection = memo(({ projects }: ResumeSectionProps) => {
 });
 
 const SkillsSection = memo(({ skills }: ResumeSectionProps) => {
-  return <GenericSection title="Skills" data={skills} />;
+  const { resumeData, setResumeData } = useResume();
+  const handleEdit = (value: string) => {
+    setResumeData({
+      ...resumeData,
+      skills: {
+        description: value,
+        description_text: value
+      }
+    });
+  };
+  return <GenericSection title="Skills" data={skills} onEdit={handleEdit} />;
 });
 
 const LanguagesSection = memo(({ languages }: ResumeSectionProps) => {
-  return <GenericSection title="Languages" data={languages} />;
+  const { resumeData, setResumeData } = useResume();
+  const handleEdit = (value: string) => {
+    setResumeData({
+      ...resumeData,
+      languages: {
+        description: value,
+        description_text: value
+      }
+    });
+  };
+  return <GenericSection title="Languages" data={languages} onEdit={handleEdit} />;
 });
 
 const VolunteerSection = memo(({ volunteer }: ResumeSectionProps) => {
-  return <GenericSection title="Volunteer Experience" data={volunteer} />;
+  const { resumeData, setResumeData } = useResume();
+  const handleEdit = (value: string) => {
+    setResumeData({
+      ...resumeData,
+      volunteer: {
+        description: value,
+        description_text: value
+      }
+    });
+  };
+  return <GenericSection title="Volunteer Experience" data={volunteer} onEdit={handleEdit} />;
 });
 
 const InterestsSection = memo(({ interests }: ResumeSectionProps) => {
-  return <GenericSection title="Interests" data={interests} />;
+  const { resumeData, setResumeData } = useResume();
+  const handleEdit = (value: string) => {
+    setResumeData({
+      ...resumeData,
+      interests: {
+        description: value,
+        description_text: value
+      }
+    });
+  };
+  return <GenericSection title="Interests" data={interests} onEdit={handleEdit} />;
 });
 
 const AwardsSection = memo(({ awards }: ResumeSectionProps) => {
-  return <GenericSection title="Awards" data={awards} />;
+  const { resumeData, setResumeData } = useResume();
+  const handleEdit = (value: string) => {
+    setResumeData({
+      ...resumeData,
+      awards: {
+        description: value,
+        description_text: value
+      }
+    });
+  };
+  return <GenericSection title="Awards" data={awards} onEdit={handleEdit} />;
 });
 
 const ReferencesSection = memo(({ references }: ResumeSectionProps) => {
-  return <GenericSection title="References" data={references} />;
+  const { resumeData, setResumeData } = useResume();
+  const handleEdit = (value: string) => {
+    setResumeData({
+      ...resumeData,
+      references: {
+        description: value,
+        description_text: value
+      }
+    });
+  };
+  return <GenericSection title="References" data={references} onEdit={handleEdit} />;
 });
 
-const GenericSection = memo(({ title, data }: GenericSectionProps) => {
+const GenericSection = memo(({ title, data, onEdit }: GenericSectionProps) => {
   if (!data || !data.description) return null;
-  const sanitizedHTML = DOMPurify.sanitize(data.description);
-
+  const handleEdit = onEdit || (() => { });
   return (
     <div className="w-full">
       <p className="text-lg font-semibold break-words">{title}</p>
       <hr className="border-black border-1 mb-2" />
-      
       {data.description && (
-        <div
-          className="mt-2 text-sm break-words"
-          dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
-        />
+        <div className="mt-2 text-sm break-words">
+          <EditableText
+            value={data.description}
+            onEdit={handleEdit}
+            className="inline-block"
+          />
+        </div>
       )}
     </div>
   );
-}); 
+});
+
+PersonalInfoHeader.displayName = "PersonalInfoHeader";
+WorkExperienceSection.displayName = "WorkExperienceSection";
+EducationSection.displayName = "EducationSection";
+ProjectsSection.displayName = "ProjectsSection";
+SkillsSection.displayName = "SkillsSection";
+LanguagesSection.displayName = "LanguagesSection";
+VolunteerSection.displayName = "VolunteerSection";
+InterestsSection.displayName = "InterestsSection";
+AwardsSection.displayName = "AwardsSection";
+ReferencesSection.displayName = "ReferencesSection";
+GenericSection.displayName = "GenericSection"; 

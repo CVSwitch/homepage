@@ -17,7 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Projects, projectsSchema } from "@/lib/validation";
+import { Projects, projectsSchema, ResumeValues } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, ChevronRight, FolderOpen, Trash2 } from "lucide-react";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
@@ -32,6 +32,12 @@ import { useResume } from "./ResumeProvider";
 import RichTextEditor from "@/components/RichTextEditor";
 import { debounce } from "lodash";
 import { extractText } from "@/lib/extractText";
+
+function stripHtml(html: string): string {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
+}
 
 export default function ProjectsForm() {
   const { resumeData, setResumeData } = useResume();
@@ -53,21 +59,22 @@ export default function ProjectsForm() {
   }, [resumeData]);
 
   useEffect(() => {
-    const updateResumeData = debounce((values) => {
-      resumeDataRef.current = {
-        ...resumeDataRef.current,
-        projects:
-          values.projects?.filter((proj: Projects) => proj !== undefined) || [],
-      };
-
-      setResumeData(resumeDataRef.current);
+    const updateProjects = debounce((values: Projects) => {
+      setResumeData((prev) => ({
+        ...prev,
+        projects: (values.projects || []).map((project) => ({
+          ...project,
+          description: stripHtml(project.description || ""),
+          description_text: stripHtml(project.description_text || ""),
+        })),
+      }));
     }, 300);
 
-    const subscription = form.watch(updateResumeData);
+    const subscription = form.watch((data) => updateProjects(data as Projects));
 
     return () => {
       subscription.unsubscribe();
-      updateResumeData.cancel();
+      updateProjects.cancel();
     };
   }, [form, setResumeData]);
 
@@ -95,9 +102,8 @@ export default function ProjectsForm() {
       </CardHeader>
 
       <div
-        className={`transition-all duration-700 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-700 ease-in-out overflow-hidden ${isOpen ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent>
           <Form {...form}>
@@ -207,9 +213,8 @@ function ProjectItem({
       </CardHeader>
 
       <div
-        className={`transition-all duration-700 ease-in-out overflow-hidden ${
-          isExpanded ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-700 ease-in-out overflow-hidden ${isExpanded ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent className="space-y-4">
           <FormField

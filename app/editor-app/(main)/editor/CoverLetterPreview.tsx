@@ -31,13 +31,13 @@ export default function CoverLetterPreview({ className, contentRef }: CoverLette
         ref={contentRef}
         id="resumePreviewContent"
       >
-        <CoverLetterSection  data={coverLetterData?.description} />
+        <CoverLetterSection data={coverLetterData?.description} />
       </div>
     </div>
   );
 }
 
-const CoverLetterSection = memo(({ data }: { data: string }) => {
+const CoverLetterSection = memo(function CoverLetterSection({ data }: { data: string }) {
   if (!data || data === "<p></p>") return null;
   const sanitizedHTML = DOMPurify.sanitize(data);
 
@@ -45,7 +45,7 @@ const CoverLetterSection = memo(({ data }: { data: string }) => {
     <div className="w-full">
       <p className="text-lg font-semibold break-words">Cover Letter</p>
       <hr className="border-black border-1 mb-2" />
-      
+
       {data && (
         <div
           className="mt-2 text-sm break-words"

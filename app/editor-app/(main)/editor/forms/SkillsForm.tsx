@@ -13,10 +13,16 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useForm, useWatch } from "react-hook-form";
 import { useResume } from "./ResumeProvider";
 import RichTextEditor from "@/components/RichTextEditor";
-import { Skills, skillsSchema } from "@/lib/validation";
+import { Skills, skillsSchema, ResumeValues } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { debounce } from "lodash";
 import { extractText } from "@/lib/extractText";
+
+function stripHtml(html: string): string {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
+}
 
 export default function SkillsForm() {
   const { resumeData, setResumeData } = useResume();
@@ -30,11 +36,15 @@ export default function SkillsForm() {
     },
   });
 
-  const updateSkills = debounce((description) => {
+  const updateSkills = debounce((description: string | undefined) => {
+    if (!description) return;
     const description_text = extractText(description);
     setResumeData((prev) => ({
       ...prev,
-      skills: { description, description_text },
+      skills: {
+        description: stripHtml(description),
+        description_text: stripHtml(description_text),
+      },
     }));
   }, 300);
 
@@ -67,9 +77,8 @@ export default function SkillsForm() {
       </CardHeader>
 
       <div
-        className={`transition-all duration-500 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[1000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? "max-h-[1000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent>
           <Form {...form}>

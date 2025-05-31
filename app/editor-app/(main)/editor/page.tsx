@@ -5,12 +5,21 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, Mail } from "lucide-react";
 import ResumeEditor, { ResumeEditorRef } from "./ResumeEditor";
 import CoverLetterEditor from "./CoverLetterEditor";
-import ResumePreviewSection from "./ResumePreviewSection";
+// import ResumePreviewSection from "./ResumePreviewSection";
 import { useEffect, useRef, useState } from "react";
 import { API_CONFIG } from "@/config/api";
 import axios from "axios";
 import { useAuth } from "@/hooks/useAuth";
 import html2pdf from "html2pdf.js";
+import JobTailoringDialog from "./JobTailoringDialog"
+import { ResumeValues } from "@/lib/validation";
+
+interface ResumeChanges {
+  section: string;
+  originalText: string;
+  suggestedText: string;
+  status: 'pending' | 'accepted' | 'rejected';
+}
 
 interface ApiResponse {
   data: {
@@ -24,7 +33,7 @@ interface ApiResponse {
 
 interface ResumeDataResponse {
   data: {
-    parsed_json: any;
+    parsed_json: ResumeValues;
     template: string;
   };
   message: string;
@@ -43,8 +52,9 @@ export default function EditorPage() {
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const resumePreviewRef = useRef<HTMLDivElement>(null);
   const [userResumeId, setUserResumeId] = useState<string | null>(resumeId);
-  const [initialResumeData, setInitialResumeData] = useState<any>(null);
+  const [initialResumeData, setInitialResumeData] = useState<ResumeValues | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showJobTailoring, setShowJobTailoring] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -85,7 +95,7 @@ export default function EditorPage() {
   function getHtmlWithStyles(element: HTMLElement): string {
     const clone = element.cloneNode(true) as HTMLElement;
     const styleSheets = Array.from(document.styleSheets);
-  
+
     styleSheets.forEach((styleSheet) => {
       try {
         const rules = styleSheet.cssRules;
@@ -104,7 +114,7 @@ export default function EditorPage() {
         console.error("Error accessing stylesheet rules", e);
       }
     });
-  
+
     return clone.outerHTML;
   }
 
@@ -132,7 +142,7 @@ export default function EditorPage() {
 
 
 
-  const handleSave = async (resumeData: any, template: string) => {
+  const handleSave = async (resumeData: ResumeValues, template: string) => {
     // Validation logic
     if (!resumeData) {
       setValidationMessage("Resume data is required.");
@@ -174,10 +184,10 @@ export default function EditorPage() {
 
         // Generate PDF blob
         const pdfBlob = await html2pdf().set(options).from(tempContainer).outputPdf("blob");
-        
+
         // Create file for upload
         pdfFile = new File([pdfBlob], "resume.pdf", { type: "application/pdf" });
-        
+
         // Trigger download
         const downloadUrl = window.URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
@@ -187,7 +197,7 @@ export default function EditorPage() {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(downloadUrl);
-        
+
         document.body.removeChild(tempContainer);
       } catch (error) {
         console.error("Error generating PDF:", error);
@@ -209,7 +219,7 @@ export default function EditorPage() {
       formData.append('file', pdfFile);
       formData.append('resumeData', JSON.stringify(resumeData));
       formData.append('template', template);
-      
+
       if (userResumeId) {
         formData.append('user_resume_id', userResumeId);
       }
@@ -250,6 +260,21 @@ export default function EditorPage() {
     }
   };
 
+  const handleApplyTailoringChanges = (changes: ResumeChanges[]) => {
+    if (resumeEditorRef.current) {
+      resumeEditorRef.current.applyTailoringChanges(changes);
+    }
+  };
+
+  const handleJobTailoringClick = () => {
+    if (!userResumeId) {
+      setValidationMessage("Please save your resume first before using job tailoring.");
+      setTimeout(() => setValidationMessage(null), 2000);
+      return;
+    }
+    setShowJobTailoring(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {validationMessage && (
@@ -262,16 +287,16 @@ export default function EditorPage() {
       )}
 
       <div className="absolute top-4 left-4 z-10 flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => router.back()}
           className="flex items-center gap-1"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
-        
+
         <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-sm">
           <Button
             variant={mode === 'resume' ? 'default' : 'ghost'}
@@ -303,13 +328,32 @@ export default function EditorPage() {
             <FileText className="h-4 w-4" />
             Save & Download
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleJobTailoringClick}
+            className="flex items-center gap-1.5 transition-all duration-200"
+          >
+            <FileText className="h-4 w-4" />
+            Job-Based Tailoring
+          </Button>
         </div>
       </div>
-      
+
+      {showJobTailoring && userResumeId && (
+        <JobTailoringDialog
+          open={showJobTailoring}
+          onClose={() => setShowJobTailoring(false)}
+          resumeData={resumeEditorRef.current?.getResumeData()}
+          onApplyChanges={handleApplyTailoringChanges}
+          resumeId={userResumeId}
+        />
+      )}
+
       {mode === 'resume' ? (
-        <ResumeEditor 
+        <ResumeEditor
           ref={resumeEditorRef}
-          onSave={handleSave} 
+          onSave={handleSave}
           contentRef={resumePreviewRef as unknown as React.RefObject<HTMLDivElement>}
           initialData={initialResumeData}
         />

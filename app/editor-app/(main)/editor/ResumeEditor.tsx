@@ -18,12 +18,21 @@ import html2pdf from "html2pdf.js";
 
 interface ResumeEditorProps {
   initialData?: ResumeValues;
-  onSave: (resumeData: any, template: string, pdfFile: File) => void;
+  onSave: (resumeData: ResumeValues, template: string, pdfFile: File) => void;
   contentRef: React.RefObject<HTMLDivElement>;
 }
 
 export interface ResumeEditorRef {
   save: () => Promise<void>;
+  getResumeData: () => ResumeValues | undefined;
+  applyTailoringChanges: (changes: ResumeChanges[]) => void;
+}
+
+interface ResumeChanges {
+  section: string;
+  originalText: string;
+  suggestedText: string;
+  status: 'pending' | 'accepted' | 'rejected';
 }
 
 type TemplateType = "single" | "double" | "colored" | "singleColored";
@@ -36,13 +45,13 @@ function ResumeEditorInternal({
   setTemplate,
   saveRef
 }: {
-  onSave: (resumeData: any, template: string, pdfFile: File) => void;
+  onSave: (resumeData: ResumeValues, template: string, pdfFile: File) => void;
   contentRef: React.RefObject<HTMLDivElement>;
   template: TemplateType;
   setTemplate: (template: TemplateType) => void;
-  saveRef: React.RefObject<{ save: () => Promise<void> }>;
+  saveRef: React.RefObject<ResumeEditorRef>;
 }) {
-  const { resumeData } = useResume();
+  const { resumeData, setResumeData } = useResume();
 
   const handleSave = async () => {
     if (contentRef.current) {
@@ -63,10 +72,55 @@ function ResumeEditorInternal({
     }
   };
 
-  // Expose save method through ref
+  const getResumeData = () => {
+    return resumeData;
+  };
+
+  const applyTailoringChanges = (changes: ResumeChanges[]) => {
+    const newResumeData = { ...resumeData };
+
+    changes.forEach(change => {
+      if (change.status === 'accepted') {
+        // Update the specific section with the suggested text
+        switch (change.section) {
+          case 'workExperience':
+            newResumeData.workExperiences = newResumeData.workExperiences?.map(exp => {
+              if (exp.description === change.originalText) {
+                return { ...exp, description: change.suggestedText };
+              }
+              return exp;
+            });
+            break;
+          case 'education':
+            newResumeData.education = newResumeData.education?.map(edu => {
+              if (edu.courses === change.originalText) {
+                return { ...edu, courses: change.suggestedText };
+              }
+              return edu;
+            });
+            break;
+          case 'projects':
+            newResumeData.projects = newResumeData.projects?.map(project => {
+              if (project.description === change.originalText) {
+                return { ...project, description: change.suggestedText };
+              }
+              return project;
+            });
+            break;
+          // Add more cases for other sections as needed
+        }
+      }
+    });
+
+    setResumeData(newResumeData);
+  };
+
+  // Expose methods through ref
   useEffect(() => {
     if (saveRef.current) {
       saveRef.current.save = handleSave;
+      saveRef.current.getResumeData = getResumeData;
+      saveRef.current.applyTailoringChanges = applyTailoringChanges;
     }
   }, [resumeData, template]);
 
@@ -86,10 +140,10 @@ function ResumeEditorInternal({
           <AwardsForm />
         </div>
         <div className="grow border-r h-full" />
-        <ResumePreviewSection 
-          template={template} 
-          setTemplate={setTemplate} 
-          contentRef={contentRef as React.RefObject<HTMLDivElement>} 
+        <ResumePreviewSection
+          template={template}
+          setTemplate={setTemplate}
+          contentRef={contentRef as React.RefObject<HTMLDivElement>}
         />
       </main>
     </div>
@@ -99,13 +153,24 @@ function ResumeEditorInternal({
 const ResumeEditor = forwardRef<ResumeEditorRef, ResumeEditorProps>(
   ({ initialData, onSave, contentRef }, ref) => {
     const [template, setTemplate] = useState<TemplateType>("single");
-    const internalSaveRef = useRef<{ save: () => Promise<void> }>({ save: async () => {} });
+    const internalSaveRef = useRef<ResumeEditorRef>({ save: async () => { }, getResumeData: () => undefined, applyTailoringChanges: () => { } });
 
     // Forward the internal save method through the ref
     useImperativeHandle(ref, () => ({
       save: async () => {
         if (internalSaveRef.current) {
           await internalSaveRef.current.save();
+        }
+      },
+      getResumeData: () => {
+        if (internalSaveRef.current) {
+          return internalSaveRef.current.getResumeData();
+        }
+        return undefined;
+      },
+      applyTailoringChanges: (changes: ResumeChanges[]) => {
+        if (internalSaveRef.current) {
+          internalSaveRef.current.applyTailoringChanges(changes);
         }
       }
     }));

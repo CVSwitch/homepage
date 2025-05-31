@@ -18,6 +18,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { debounce } from "lodash";
 import { extractText } from "@/lib/extractText";
 
+function stripHtml(html: string): string {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
+}
+
 export default function ReferenceForm() {
   const { resumeData, setResumeData } = useResume();
   const [isOpen, setIsOpen] = useState(false);
@@ -32,10 +38,13 @@ export default function ReferenceForm() {
 
   const updateReferences = debounce((description) => {
     const description_text = extractText(description);
-    setResumeData((prev) => ({
-      ...prev,
-      references: { description, description_text },
-    }));
+    setResumeData({
+      ...resumeData,
+      references: {
+        description: stripHtml(description),
+        description_text: stripHtml(description_text),
+      },
+    });
   }, 300);
 
   const watchedDescription = useWatch({
@@ -67,9 +76,8 @@ export default function ReferenceForm() {
       </CardHeader>
 
       <div
-        className={`transition-all duration-500 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[1000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? "max-h-[1000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent>
           <Form {...form}>
