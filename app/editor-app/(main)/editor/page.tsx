@@ -5,21 +5,21 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, Mail } from "lucide-react";
 import ResumeEditor, { ResumeEditorRef } from "./ResumeEditor";
 import CoverLetterEditor from "./CoverLetterEditor";
-// import ResumePreviewSection from "./ResumePreviewSection";
+import ResumePreviewSection from "./ResumePreviewSection";
 import { useEffect, useRef, useState } from "react";
 import { API_CONFIG } from "@/config/api";
 import axios from "axios";
 import { useAuth } from "@/hooks/useAuth";
 import html2pdf from "html2pdf.js";
-import JobTailoringDialog from "./JobTailoringDialog"
+// import JobTailoringDialog from "./JobTailoringDialog"
 import { ResumeValues } from "@/lib/validation";
 
-interface ResumeChanges {
-  section: string;
-  originalText: string;
-  suggestedText: string;
-  status: 'pending' | 'accepted' | 'rejected';
-}
+// interface ResumeChanges {
+//   section: string;
+//   originalText: string;
+//   suggestedText: string;
+//   status: 'pending' | 'accepted' | 'rejected';
+// }
 
 interface ApiResponse {
   data: {
@@ -54,7 +54,7 @@ export default function EditorPage() {
   const [userResumeId, setUserResumeId] = useState<string | null>(resumeId);
   const [initialResumeData, setInitialResumeData] = useState<ResumeValues | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showJobTailoring, setShowJobTailoring] = useState(false);
+  // const [showJobTailoring, setShowJobTailoring] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -118,6 +118,8 @@ export default function EditorPage() {
     return clone.outerHTML;
   }
 
+  /* This is not part of resumeTailoring */
+
   // const downloadPdf = async (url: string) => {
   //   try {
   //     const response = await axios.get(url, {
@@ -138,6 +140,8 @@ export default function EditorPage() {
   //     setTimeout(() => setValidationMessage(null), 2000);
   //   }
   // };
+
+  /* This is not part of resumeTailoring */
 
 
 
@@ -260,20 +264,20 @@ export default function EditorPage() {
     }
   };
 
-  const handleApplyTailoringChanges = (changes: ResumeChanges[]) => {
-    if (resumeEditorRef.current) {
-      resumeEditorRef.current.applyTailoringChanges(changes);
-    }
-  };
+  // const handleApplyTailoringChanges = (changes: ResumeChanges[]) => {
+  //   if (resumeEditorRef.current) {
+  //     resumeEditorRef.current.applyTailoringChanges(changes);
+  //   }
+  // };
 
-  const handleJobTailoringClick = () => {
-    if (!userResumeId) {
-      setValidationMessage("Please save your resume first before using job tailoring.");
-      setTimeout(() => setValidationMessage(null), 2000);
-      return;
-    }
-    setShowJobTailoring(true);
-  };
+  // const handleJobTailoringClick = () => {
+  //   if (!userResumeId) {
+  //     setValidationMessage("Please save your resume first before using job tailoring.");
+  //     setTimeout(() => setValidationMessage(null), 2000);
+  //     return;
+  //   }
+  //   setShowJobTailoring(true);
+  // };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -328,7 +332,7 @@ export default function EditorPage() {
             <FileText className="h-4 w-4" />
             Save & Download
           </Button>
-          <Button
+          {/* <Button
             variant="ghost"
             size="sm"
             onClick={handleJobTailoringClick}
@@ -336,11 +340,11 @@ export default function EditorPage() {
           >
             <FileText className="h-4 w-4" />
             Job-Based Tailoring
-          </Button>
+          </Button> */}
         </div>
       </div>
 
-      {showJobTailoring && userResumeId && (
+      {/* {showJobTailoring && userResumeId && (
         <JobTailoringDialog
           open={showJobTailoring}
           onClose={() => setShowJobTailoring(false)}
@@ -348,7 +352,7 @@ export default function EditorPage() {
           onApplyChanges={handleApplyTailoringChanges}
           resumeId={userResumeId}
         />
-      )}
+      )} */}
 
       {mode === 'resume' ? (
         <ResumeEditor
