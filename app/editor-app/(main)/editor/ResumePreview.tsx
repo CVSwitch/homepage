@@ -9,7 +9,6 @@ import EditableText from "./components/EditableText";
 
 
 
-
 interface ResumePreviewProps {
   className?: string;
   contentRef?: React.Ref<HTMLDivElement>;
@@ -375,6 +374,7 @@ const EducationSection = memo(function EducationSection({ education }: ResumeSec
                 value={edu.courses}
                 onEdit={(value) => handleEdit(index, "courses", value)}
                 className="inline-block"
+                isRichText
               />
             </div>
           )}

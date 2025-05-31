@@ -20,7 +20,7 @@ import {
 import { Education, educationSchema } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, ChevronRight, GraduationCap, Trash2 } from "lucide-react";
-import { useDeferredValue, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback, useDeferredValue } from "react";
 import {
   Resolver,
   useFieldArray,
@@ -90,7 +90,7 @@ export default function EducationForm() {
       >
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5" /> {/* Education Icon */}
+            <GraduationCap className="h-5 w-5" />
             <span className="text-xl">Education</span>
           </div>
           {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
@@ -110,6 +110,7 @@ export default function EducationForm() {
               {fields.map((field, index) => (
                 <EducationItem
                   key={field.id}
+                  id={field.id}
                   index={index}
                   form={form}
                   remove={remove}
@@ -145,6 +146,7 @@ export default function EducationForm() {
 }
 
 interface EducationItemProps {
+  id: string;
   form: UseFormReturn<EducationFormValues>;
   index: number;
   remove: (index: number) => void;
@@ -153,6 +155,7 @@ interface EducationItemProps {
 }
 
 function EducationItem({
+  id,
   form,
   index,
   remove,
@@ -165,23 +168,20 @@ function EducationItem({
     name: `education.${index}.endDate`,
   });
   const currentlyStudying = endDate === undefined;
-
   const courses = useWatch({
     control: form.control,
     name: `education.${index}.courses`,
   });
 
-  //useDeferredValue is used to wait till all the courses are loaded before extracting text it is done when React is idle
+  // Use deferred value to prevent cursor jumping
   const deferredCourses = useDeferredValue(courses);
 
   useEffect(() => {
-    if (deferredCourses) {
-      const extractedText = extractText(deferredCourses);
-      form.setValue(`education.${index}.description_text`, extractedText, {
-        shouldValidate: false,
-        shouldDirty: true,
-      });
-    }
+    const extractedText = extractText(deferredCourses || "");
+    form.setValue(`education.${index}.description_text`, extractedText, {
+      shouldValidate: false,
+      shouldDirty: true,
+    });
   }, [deferredCourses, form, index]);
 
   return (
@@ -326,7 +326,9 @@ function EducationItem({
                   <RichTextEditor
                     value={field.value || ""}
                     onChange={(json) =>
-                      form.setValue(`education.${index}.courses`, json)
+                      form.setValue(`education.${index}.courses`, json, {
+                        shouldValidate: true,
+                      })
                     }
                   />
                 </FormControl>
@@ -334,7 +336,7 @@ function EducationItem({
               </FormItem>
             )}
           />
-          {/*shadow field to store text value of the rich text editor does not show in UI */}
+
           <input
             type="hidden"
             {...form.register(`education.${index}.description_text`)}

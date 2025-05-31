@@ -328,6 +328,7 @@ const EducationSection = memo(({ education }: ResumeSectionProps) => {
               value={edu.courses}
               onEdit={(value) => handleEdit(index, "courses", value)}
               className="mt-2 text-sm break-words"
+              isRichText
             />
           )}
         </div>

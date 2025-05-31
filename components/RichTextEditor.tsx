@@ -9,11 +9,11 @@ import { debounce } from "lodash";
 
 type TextEditorProps = {
   value: string;
-  onChange: (content: string) => void; 
+  onChange: (content: string) => void;
   height?: string;
 };
 
-export default function RichTextEditor({ value, onChange, height="156px" }: TextEditorProps) {
+export default function RichTextEditor({ value, onChange, height = "156px" }: TextEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -42,7 +42,7 @@ export default function RichTextEditor({ value, onChange, height="156px" }: Text
   const debouncedOnChange = useCallback(
     debounce((html: string) => {
       onChange(html);
-    }, 300), 
+    }, 300),
     [onChange]
   );
 

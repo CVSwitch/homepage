@@ -12,7 +12,7 @@ interface EditableTextProps {
 const EditableText = memo(function EditableText({ value, onEdit, className, isRichText = false }: EditableTextProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState(value);
-    const inputRef = useRef<HTMLSpanElement>(null);
+    const inputRef = useRef<HTMLDivElement>(null);
     const cursorPositionRef = useRef<number | null>(null);
 
     const handleClick = () => {
@@ -55,13 +55,13 @@ const EditableText = memo(function EditableText({ value, onEdit, className, isRi
         }
     }, [isEditing]);
 
-    const handleInput = (e: React.FormEvent<HTMLSpanElement>) => {
+    const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
             const range = selection.getRangeAt(0);
             cursorPositionRef.current = range.startOffset;
         }
-        const newValue = e.currentTarget.textContent || '';
+        const newValue = e.currentTarget.innerHTML || '';
         setEditValue(newValue);
         // Restore cursor position after state update
         requestAnimationFrame(() => {
@@ -90,7 +90,7 @@ const EditableText = memo(function EditableText({ value, onEdit, className, isRi
 
     if (isEditing) {
         return (
-            <span
+            <div
                 ref={inputRef}
                 contentEditable
                 suppressContentEditableWarning
@@ -101,9 +101,8 @@ const EditableText = memo(function EditableText({ value, onEdit, className, isRi
                     "outline-none min-w-[1em] inline-block",
                     className
                 )}
-            >
-                {editValue}
-            </span>
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(editValue) }}
+            />
         );
     }
 
@@ -127,4 +126,7 @@ const EditableText = memo(function EditableText({ value, onEdit, className, isRi
     );
 });
 
-export default EditableText; 
+export default EditableText;
+
+
+
