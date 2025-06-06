@@ -30,13 +30,13 @@ export const resumeService = {
       const response = await fetch(
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FETCH_USER_DATA}?user_id=${userId}`
       );
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch resumes: ${response.status}`);
       }
-      
+
       const data = await response.json() as UserDataResponse;
-      
+
       if (data.data && Array.isArray(data.data.uploaded_resume)) {
         // Create a map of parsed JSON files by their base name (without extension)
         const parsedJsonMap = new Map();
@@ -48,17 +48,17 @@ export const resumeService = {
             parsedJsonMap.set(baseName, json.public_url);
           });
         }
-        
+
         return data.data.uploaded_resume.map((resume, index) => {
           // Extract filename from cloud_path
           const cloudPath = resume.cloud_path || '';
           const fileName = cloudPath.split('/').pop() || `Resume ${index + 1}`;
-          
+
           // Check if this resume has a corresponding parsed JSON
           // Extract timestamp from filename (e.g., "1743795375" from "1743795375.008884_Aditya_Yadav_SG-2.pdf")
           const timestamp = cloudPath.split('/').pop()?.split('.')[0] || '';
           const jsonUrl = parsedJsonMap.get(timestamp) || null;
-          
+
           return {
             id: resume.id,
             name: resume.file_name,
@@ -71,19 +71,19 @@ export const resumeService = {
           };
         });
       }
-      
+
       return [];
     } catch (error) {
       console.error('Error in getUserResumes:', error);
       throw error;
     }
   },
-  
+
   async uploadResume(userId: string, file: File): Promise<Resume> {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      
+
       const response = await fetch(
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD_RESUME}?user_id=${userId}`,
         {
@@ -91,11 +91,11 @@ export const resumeService = {
           body: formData,
         }
       );
-      
+
       if (!response.ok) {
         throw new Error(`Failed to upload resume: ${response.status}`);
       }
-      
+
       const result = await response.json();
       // const newResume = {
       //   id: Date.now().toString(),
@@ -105,12 +105,12 @@ export const resumeService = {
       //   cloudPath: result.data.cloud_file_path,
       //   parsingStatus: "parsing" as const
       // };
-      
+
       // Call PDF to parsed JSON with a 2-second delay
       // setTimeout(async () => {
       //   await pdfParserService.convertPdfToJson(userId, newResume.cloudPath || '');
       // }, 2000);
-      
+
       return result;
     } catch (error) {
       console.error('Error in uploadResume:', error);
@@ -146,11 +146,11 @@ export const resumeService = {
     try {
       const urlParts = jsonUrl.split('cvswitch-54227.appspot.com/');
       const fullPath = urlParts[1];
-      
+
       const response = await fetch(
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ANALYZE_RESUME}?user_id=${userId}&cloud_file_path=${encodeURIComponent(fullPath)}`
       );
-      
+
       const analyzeResult = await response.json();
       console.log('Analyze API Response:', analyzeResult);
 

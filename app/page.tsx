@@ -51,7 +51,7 @@ export default function LandingPage() {
             </>
           )}
         </button>
-        
+
         {/* Add reset button for connection issues */}
         <div className="mt-4 text-center">
           <button

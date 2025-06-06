@@ -37,6 +37,7 @@ export default function EditorPage() {
   const searchParams = useSearchParams();
   const initialMode = searchParams.get("mode") === "cover-letter" ? "cover-letter" : "resume";
   const resumeId = searchParams.get("resume_id");
+  const isTailored = searchParams.get("tailored") === "true";
   const [mode, setMode] = useState<"resume" | "cover-letter">(initialMode);
   const { user } = useAuth();
   const resumeEditorRef = useRef<ResumeEditorRef>(null);
@@ -85,7 +86,7 @@ export default function EditorPage() {
   function getHtmlWithStyles(element: HTMLElement): string {
     const clone = element.cloneNode(true) as HTMLElement;
     const styleSheets = Array.from(document.styleSheets);
-  
+
     styleSheets.forEach((styleSheet) => {
       try {
         const rules = styleSheet.cssRules;
@@ -104,7 +105,7 @@ export default function EditorPage() {
         console.error("Error accessing stylesheet rules", e);
       }
     });
-  
+
     return clone.outerHTML;
   }
 
@@ -174,10 +175,10 @@ export default function EditorPage() {
 
         // Generate PDF blob
         const pdfBlob = await html2pdf().set(options).from(tempContainer).outputPdf("blob");
-        
+
         // Create file for upload
         pdfFile = new File([pdfBlob], "resume.pdf", { type: "application/pdf" });
-        
+
         // Trigger download
         const downloadUrl = window.URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
@@ -187,7 +188,7 @@ export default function EditorPage() {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(downloadUrl);
-        
+
         document.body.removeChild(tempContainer);
       } catch (error) {
         console.error("Error generating PDF:", error);
@@ -209,7 +210,7 @@ export default function EditorPage() {
       formData.append('file', pdfFile);
       formData.append('resumeData', JSON.stringify(resumeData));
       formData.append('template', template);
-      
+
       if (userResumeId) {
         formData.append('user_resume_id', userResumeId);
       }
@@ -262,16 +263,16 @@ export default function EditorPage() {
       )}
 
       <div className="absolute top-4 left-4 z-10 flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => router.back()}
           className="flex items-center gap-1"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
-        
+
         <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-sm">
           <Button
             variant={mode === 'resume' ? 'default' : 'ghost'}
@@ -305,11 +306,11 @@ export default function EditorPage() {
           </Button>
         </div>
       </div>
-      
+
       {mode === 'resume' ? (
-        <ResumeEditor 
+        <ResumeEditor
           ref={resumeEditorRef}
-          onSave={handleSave} 
+          onSave={handleSave}
           contentRef={resumePreviewRef as unknown as React.RefObject<HTMLDivElement>}
           initialData={initialResumeData}
         />

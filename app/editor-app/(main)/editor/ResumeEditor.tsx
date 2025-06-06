@@ -86,10 +86,10 @@ function ResumeEditorInternal({
           <AwardsForm />
         </div>
         <div className="grow border-r h-full" />
-        <ResumePreviewSection 
-          template={template} 
-          setTemplate={setTemplate} 
-          contentRef={contentRef as React.RefObject<HTMLDivElement>} 
+        <ResumePreviewSection
+          template={template}
+          setTemplate={setTemplate}
+          contentRef={contentRef as React.RefObject<HTMLDivElement>}
         />
       </main>
     </div>
@@ -99,7 +99,7 @@ function ResumeEditorInternal({
 const ResumeEditor = forwardRef<ResumeEditorRef, ResumeEditorProps>(
   ({ initialData, onSave, contentRef }, ref) => {
     const [template, setTemplate] = useState<TemplateType>("single");
-    const internalSaveRef = useRef<{ save: () => Promise<void> }>({ save: async () => {} });
+    const internalSaveRef = useRef<{ save: () => Promise<void> }>({ save: async () => { } });
 
     // Forward the internal save method through the ref
     useImperativeHandle(ref, () => ({

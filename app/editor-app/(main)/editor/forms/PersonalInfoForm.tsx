@@ -74,9 +74,8 @@ export default function PersonalInfoForm() {
       </CardHeader>
 
       <div
-        className={`transition-all duration-1000 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[1000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-1000 ease-in-out overflow-hidden ${isOpen ? "max-h-[1000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent>
           <Form {...form}>

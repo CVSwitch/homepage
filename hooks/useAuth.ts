@@ -10,7 +10,7 @@ export function useAuth() {
     // Initialize Firebase if not already initialized
     const app = initializeFirebase();
     const auth = getAuth(app);
-    
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
