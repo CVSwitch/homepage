@@ -9,17 +9,15 @@ export function useCoverLetters(userId: string | undefined) {
 
   const fetchCoverLetters = async () => {
     if (!userId) return;
-    
+
     setIsLoading(true);
     setError(null);
     try {
-      console.log('Fetching cover letters...');
       const fetchedCoverLetters = await coverLetterService.getUserCoverLetters(userId);
-      console.log('Fetched cover letters:', fetchedCoverLetters);
       setCoverLetters(fetchedCoverLetters);
     } catch (error) {
       console.error('Error fetching cover letters:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch cover letters');
+      setError('Failed to fetch cover letters. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -33,7 +31,7 @@ export function useCoverLetters(userId: string | undefined) {
 
   const uploadCoverLetter = async (file: File) => {
     if (!userId) return;
-    
+
     setUploadLoading(true);
     setError(null);
     try {

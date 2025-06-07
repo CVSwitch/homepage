@@ -69,12 +69,12 @@ export default function SkillsForm() {
   // Fetch tailored data when component mounts if this is a tailored resume
   useEffect(() => {
     const fetchTailoredData = async () => {
-      console.log('SkillsForm Debug:', {
-        isTailored,
-        tailoredResumeId,
-        userId: user?.uid,
-        searchParams: Object.fromEntries(searchParams.entries())
-      });
+      // console.log('SkillsForm Debug:', {
+      //   isTailored,
+      //   tailoredResumeId,
+      //   userId: user?.uid,
+      //   searchParams: Object.fromEntries(searchParams.entries())
+      // });
 
       if (isTailored && tailoredResumeId && user?.uid) {
         try {
@@ -82,33 +82,33 @@ export default function SkillsForm() {
           const storedTailoredData = sessionStorage.getItem('tailoredResumeData');
 
           if (storedTailoredData) {
-            console.log('Using tailored data from session storage');
+            // console.log('Using tailored data from session storage');
             const tailoredData: TailoredData = JSON.parse(storedTailoredData);
 
             if (tailoredData.skills) {
               const tailoredSkills = tailoredData.skills.description;
               const currentSkills = resumeData.skills?.description || "";
 
-              console.log('Skills comparison:', {
-                tailoredSkills,
-                currentSkills,
-                isDifferent: tailoredSkills !== currentSkills
-              });
+              // console.log('Skills comparison:', {
+              //   tailoredSkills,
+              //   currentSkills,
+              //   isDifferent: tailoredSkills !== currentSkills
+              // });
 
               // Only show suggestion if it's different from current content
               if (tailoredSkills !== currentSkills) {
                 setTailoredSuggestion(tailoredSkills);
                 setShowSuggestion(true);
-                console.log('Showing tailored suggestion for skills');
+                // console.log('Showing tailored suggestion for skills');
               } else {
-                console.log('Skills are the same, not showing suggestion');
+                // console.log('Skills are the same, not showing suggestion');
               }
             } else {
-              console.log('No skills data in tailored response');
+              // console.log('No skills data in tailored response');
             }
           } else {
             // Fallback to API call if session storage is empty
-            console.log('Fetching tailored skills data from API:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_RESUME_DATA}?user_id=${user.uid}&resume_id=${tailoredResumeId}`);
+            // console.log('Fetching tailored skills data from API:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_RESUME_DATA}?user_id=${user.uid}&resume_id=${tailoredResumeId}`);
 
             const response = await axios.get<{
               data: {
@@ -118,35 +118,35 @@ export default function SkillsForm() {
               `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_RESUME_DATA}?user_id=${user.uid}&resume_id=${tailoredResumeId}`
             );
 
-            console.log('Tailored skills response:', response.data);
+            // console.log('Tailored skills response:', response.data);
 
             if (response.data.data.parsed_json.skills) {
               const tailoredSkills = response.data.data.parsed_json.skills.description;
               const currentSkills = resumeData.skills?.description || "";
 
-              console.log('Skills comparison:', {
-                tailoredSkills,
-                currentSkills,
-                isDifferent: tailoredSkills !== currentSkills
-              });
+              // console.log('Skills comparison:', {
+              //   tailoredSkills,
+              //   currentSkills,
+              //   isDifferent: tailoredSkills !== currentSkills
+              // });
 
               // Only show suggestion if it's different from current content
               if (tailoredSkills !== currentSkills) {
                 setTailoredSuggestion(tailoredSkills);
                 setShowSuggestion(true);
-                console.log('Showing tailored suggestion for skills');
+                // console.log('Showing tailored suggestion for skills');
               } else {
-                console.log('Skills are the same, not showing suggestion');
+                // console.log('Skills are the same, not showing suggestion');
               }
             } else {
-              console.log('No skills data in tailored response');
+              // console.log('No skills data in tailored response');
             }
           }
         } catch (error) {
           console.error('Error fetching tailored skills data:', error);
         }
       } else {
-        console.log('Skipping tailored skills fetch - conditions not met');
+        // console.log('Skipping tailored skills fetch - conditions not met');
       }
     };
 
@@ -158,12 +158,18 @@ export default function SkillsForm() {
       form.setValue("skills.description", tailoredSuggestion);
       setShowSuggestion(false);
       setTailoredSuggestion(null);
+
+      // Remove tailored data from session storage since it's been used
+      sessionStorage.removeItem('tailoredResumeData');
     }
   };
 
   const handleRejectSuggestion = () => {
     setShowSuggestion(false);
     setTailoredSuggestion(null);
+
+    // Remove tailored data from session storage since it's been rejected
+    sessionStorage.removeItem('tailoredResumeData');
   };
 
   return (
@@ -207,6 +213,8 @@ export default function SkillsForm() {
                         onChange={(json) =>
                           form.setValue("skills.description", json)
                         }
+                        showAIWriter={true}
+                        aiWriterFieldKey="skills_description"
                       />
                     </FormControl>
                   </FormItem>

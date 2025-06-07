@@ -66,7 +66,7 @@ export function ResumeSection() {
     uploadLoading
   } = useResumes(user?.uid);
 
-  console.log(resumes, 'resumes')
+  // console.log(resumes, 'resumes')
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
@@ -109,11 +109,11 @@ export function ResumeSection() {
               setParsingStatus("completed");
               setCurrentlyParsingResumeId(null);
 
-              console.log("Resume parsing completed successfully:", {
-                resumeId: resumeId,
-                parseResponse: parseResponse.data,
-                uploadedResume: uploadedResume
-              });
+              // console.log("Resume parsing completed successfully:", {
+              //   resumeId: resumeId,
+              //   parseResponse: parseResponse.data,
+              //   uploadedResume: uploadedResume
+              // });
             } else {
               setParsingStatus("failed");
               setCurrentlyParsingResumeId(null);
@@ -150,7 +150,7 @@ export function ResumeSection() {
 
     try {
       const analysis = await resumeService.analyzeResume(user.uid, resume.jsonUrl);
-      console.log('Analysis response:', analysis); // Debug log
+      // console.log('Analysis response:', analysis); // Debug log
       setCurrentAnalysis(analysis);
     } catch (error) {
       console.error('Error analyzing resume:', error);
@@ -201,7 +201,7 @@ export function ResumeSection() {
 
 
   const handleTailorResume = async (jobDescription: string, resumeId: string) => {
-    console.log('handleTailorResume called with:', { jobDescription, resumeId });
+    // console.log('handleTailorResume called with:', { jobDescription, resumeId });
 
     if (!user?.uid) {
       setError('Please sign in to tailor your resume');
@@ -212,7 +212,7 @@ export function ResumeSection() {
 
     try {
       const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.TAILOR_RESUME}`;
-      console.log('Making request to:', url);
+      // console.log('Making request to:', url);
 
       const requestData = {
         user_id: user.uid,
@@ -220,7 +220,7 @@ export function ResumeSection() {
         job_description: jobDescription
       };
 
-      console.log('Request payload:', requestData);
+      // console.log('Request payload:', requestData);
 
       const response = await axios.post(url, requestData, {
         headers: {
@@ -228,18 +228,18 @@ export function ResumeSection() {
         },
       });
 
-      console.log('Tailor resume response:', response.data);
+      // console.log('Tailor resume response:', response.data);
 
       // Check if we have a successful response with tailored_resume_id
       if (response.data?.data?.data?.tailored_resume_id) {
         const tailoredResumeId = response.data.data.data.tailored_resume_id;
         const tailoredData = response.data.data.data.parsed_json;
 
-        console.log('Redirecting to editor with original resume ID and tailored resume ID:', {
-          originalResumeId: resumeId,
-          tailoredResumeId: tailoredResumeId,
-          tailoredData: tailoredData
-        });
+        // console.log('Redirecting to editor with original resume ID and tailored resume ID:', {
+        //   originalResumeId: resumeId,
+        //   tailoredResumeId: tailoredResumeId,
+        //   tailoredData: tailoredData
+        // });
 
         // Store tailored data in session storage for forms to access
         if (tailoredData) {
@@ -260,8 +260,8 @@ export function ResumeSection() {
     } catch (error) {
       console.error('Error tailoring resume:', error);
       if (axios.isAxiosError(error)) {
-        console.log('Response data:', error.response?.data);
-        console.log('Response status:', error.response?.status);
+        // console.log('Response data:', error.response?.data);
+        // console.log('Response status:', error.response?.status);
       }
       setError(error instanceof Error ? error.message : 'An error occurred while tailoring the resume');
     }

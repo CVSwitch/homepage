@@ -13,7 +13,7 @@ export default function CoverLetterPreview({ className, contentRef }: CoverLette
   const containerRef = useRef<HTMLDivElement>(null);
   const { width } = useDimensions(containerRef as React.RefObject<HTMLElement>);
   const { coverLetterData } = useCoverLetter();
-  console.log(coverLetterData);
+  // console.log(coverLetterData);
   // 794 is the width of the resume previewer
   // 210/297 is the aspect ratio of an A4 paper
 
@@ -31,7 +31,7 @@ export default function CoverLetterPreview({ className, contentRef }: CoverLette
         ref={contentRef}
         id="resumePreviewContent"
       >
-        <CoverLetterSection  data={coverLetterData?.description} />
+        <CoverLetterSection data={coverLetterData?.description} />
       </div>
     </div>
   );
@@ -45,7 +45,7 @@ const CoverLetterSection = memo(({ data }: { data: string }) => {
     <div className="w-full">
       <p className="text-lg font-semibold break-words">Cover Letter</p>
       <hr className="border-black border-1 mb-2" />
-      
+
       {data && (
         <div
           className="mt-2 text-sm break-words"

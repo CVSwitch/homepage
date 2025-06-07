@@ -6,14 +6,23 @@ import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import { useEffect, useCallback } from "react";
 import { debounce } from "lodash";
+import { AIWriterButton } from "@/components/ui/AIWriterButton";
 
 type TextEditorProps = {
   value: string;
-  onChange: (content: string) => void; 
+  onChange: (content: string) => void;
   height?: string;
+  showAIWriter?: boolean;
+  aiWriterFieldKey?: string;
 };
 
-export default function RichTextEditor({ value, onChange, height="156px" }: TextEditorProps) {
+export default function RichTextEditor({
+  value,
+  onChange,
+  height = "156px",
+  showAIWriter = false,
+  aiWriterFieldKey = ""
+}: TextEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -42,7 +51,7 @@ export default function RichTextEditor({ value, onChange, height="156px" }: Text
   const debouncedOnChange = useCallback(
     debounce((html: string) => {
       onChange(html);
-    }, 300), 
+    }, 300),
     [onChange]
   );
 
@@ -59,10 +68,28 @@ export default function RichTextEditor({ value, onChange, height="156px" }: Text
     }
   }, [value, editor]);
 
+  const handleAIAccept = (newText: string) => {
+    onChange(newText);
+    if (editor) {
+      editor.commands.setContent(newText);
+    }
+  };
+
   return (
-    <div>
-      <TextEditorMenuBar editor={editor} />
-      <EditorContent editor={editor} />
+    <div className="space-y-3">
+      <div>
+        <TextEditorMenuBar editor={editor} />
+        <EditorContent editor={editor} />
+      </div>
+
+      {showAIWriter && aiWriterFieldKey && (
+        <AIWriterButton
+          currentText={value}
+          onAccept={handleAIAccept}
+          fieldKey={aiWriterFieldKey}
+          className="w-full sm:w-auto"
+        />
+      )}
     </div>
   );
 }

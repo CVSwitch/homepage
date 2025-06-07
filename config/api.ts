@@ -13,6 +13,7 @@ export const API_CONFIG = {
     DELETE_RESUME: '/api/v1/deleteresume',
     PARSE_UPLOADED_RESUME: '/api/v1/parse_uploaded_resume',
     TAILOR_RESUME: '/api/v1/tailorresume',
+    AI_WRITE: '/api/v1/aiwritebutton',
   }
 };
 

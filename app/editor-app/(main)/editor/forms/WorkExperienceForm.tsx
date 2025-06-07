@@ -106,12 +106,12 @@ export default function WorkExperienceForm() {
   // Fetch tailored data when component mounts if this is a tailored resume
   useEffect(() => {
     const fetchTailoredData = async () => {
-      console.log('WorkExperienceForm Debug:', {
-        isTailored,
-        tailoredResumeId,
-        userId: user?.uid,
-        searchParams: Object.fromEntries(searchParams.entries())
-      });
+      // console.log('WorkExperienceForm Debug:', {
+      //   isTailored,
+      //   tailoredResumeId,
+      //   userId: user?.uid,
+      //   searchParams: Object.fromEntries(searchParams.entries())
+      // });
 
       if (isTailored && tailoredResumeId && user?.uid) {
         try {
@@ -119,7 +119,7 @@ export default function WorkExperienceForm() {
           const storedTailoredData = sessionStorage.getItem('tailoredResumeData');
 
           if (storedTailoredData) {
-            console.log('Using tailored data from session storage');
+            // console.log('Using tailored data from session storage');
             const tailoredData: TailoredData = JSON.parse(storedTailoredData);
 
             if (tailoredData.workExperiences) {
@@ -131,21 +131,21 @@ export default function WorkExperienceForm() {
               const suggestionsToShow = tailoredExperiences.map((tailored, index) => {
                 const current = currentExperiences[index];
                 const isDifferent = current && current.description !== tailored.description;
-                console.log(`Work Experience ${index + 1} comparison:`, {
-                  currentDescription: current?.description,
-                  tailoredDescription: tailored.description,
-                  isDifferent
-                });
+                // console.log(`Work Experience ${index + 1} comparison:`, {
+                //   currentDescription: current?.description,
+                //   tailoredDescription: tailored.description,
+                //   isDifferent
+                // });
                 return isDifferent;
               });
               setShowSuggestions(suggestionsToShow);
-              console.log('Work experience suggestions to show:', suggestionsToShow);
+              // console.log('Work experience suggestions to show:', suggestionsToShow);
             } else {
-              console.log('No work experiences data in tailored response');
+              // console.log('No work experiences data in tailored response');
             }
           } else {
             // Fallback to API call if session storage is empty
-            console.log('Fetching tailored work experience data from API:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_RESUME_DATA}?user_id=${user.uid}&resume_id=${tailoredResumeId}`);
+            // console.log('Fetching tailored work experience data from API:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_RESUME_DATA}?user_id=${user.uid}&resume_id=${tailoredResumeId}`);
 
             const response = await axios.get<{
               data: {
@@ -155,7 +155,7 @@ export default function WorkExperienceForm() {
               `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_RESUME_DATA}?user_id=${user.uid}&resume_id=${tailoredResumeId}`
             );
 
-            console.log('Tailored work experience response:', response.data);
+            // console.log('Tailored work experience response:', response.data);
 
             if (response.data.data.parsed_json.workExperiences) {
               const tailoredExperiences = response.data.data.parsed_json.workExperiences;
@@ -166,24 +166,24 @@ export default function WorkExperienceForm() {
               const suggestionsToShow = tailoredExperiences.map((tailored, index) => {
                 const current = currentExperiences[index];
                 const isDifferent = current && current.description !== tailored.description;
-                console.log(`Work Experience ${index + 1} comparison:`, {
-                  currentDescription: current?.description,
-                  tailoredDescription: tailored.description,
-                  isDifferent
-                });
+                // console.log(`Work Experience ${index + 1} comparison:`, {
+                //   currentDescription: current?.description,
+                //   tailoredDescription: tailored.description,
+                //   isDifferent
+                // });
                 return isDifferent;
               });
               setShowSuggestions(suggestionsToShow);
-              console.log('Work experience suggestions to show:', suggestionsToShow);
+              // console.log('Work experience suggestions to show:', suggestionsToShow);
             } else {
-              console.log('No work experiences data in tailored response');
+              // console.log('No work experiences data in tailored response');
             }
           }
         } catch (error) {
           console.error('Error fetching tailored work experience data:', error);
         }
       } else {
-        console.log('Skipping tailored work experience fetch - conditions not met');
+        // console.log('Skipping tailored work experience fetch - conditions not met');
       }
     };
 
@@ -202,6 +202,12 @@ export default function WorkExperienceForm() {
       const newShowSuggestions = [...showSuggestions];
       newShowSuggestions[index] = false;
       setShowSuggestions(newShowSuggestions);
+
+      // Check if all suggestions have been handled
+      const allHandled = newShowSuggestions.every(show => !show);
+      if (allHandled) {
+        sessionStorage.removeItem('tailoredResumeData');
+      }
     }
   };
 
@@ -209,6 +215,12 @@ export default function WorkExperienceForm() {
     const newShowSuggestions = [...showSuggestions];
     newShowSuggestions[index] = false;
     setShowSuggestions(newShowSuggestions);
+
+    // Check if all suggestions have been handled
+    const allHandled = newShowSuggestions.every(show => !show);
+    if (allHandled) {
+      sessionStorage.removeItem('tailoredResumeData');
+    }
   };
 
   return (
@@ -499,6 +511,8 @@ function WorkExperienceItem({
                         json
                       );
                     }}
+                    showAIWriter={true}
+                    aiWriterFieldKey={`workExperience_${index}_description`}
                   />
                 </FormControl>
                 <FormMessage />

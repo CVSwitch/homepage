@@ -16,32 +16,32 @@ export default function ImportPage() {
     async function fetchResumeData() {
       try {
         let data;
-        
+
         if (jsonUrl) {
           // Fetch from the provided JSON URL
           const response = await fetch(jsonUrl);
-          
+
           if (!response.ok) {
             throw new Error(`Error: ${response.status}`);
           }
-          
+
           data = await response.json();
-          console.log("Resume data fetched from JSON URL:", data);
+          // console.log("Resume data fetched from JSON URL:", data);
         } else {
           // Fallback to mock data if no URL provided
           const response = await fetch("/api/mockResume");
-          
+
           if (!response.ok) {
             throw new Error(`Error: ${response.status}`);
           }
-          
+
           data = await response.json();
-          console.log("Resume data fetched from mock API:", data);
+          // console.log("Resume data fetched from mock API:", data);
         }
-        
+
         // Store the data in localStorage
         localStorage.setItem("resumeData", JSON.stringify(data));
-        
+
         // Redirect to editor
         router.push("/editor-app/editor");
       } catch (err) {
@@ -68,9 +68,9 @@ export default function ImportPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <div className="absolute top-4 left-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => router.back()}
           className="flex items-center gap-1"
         >

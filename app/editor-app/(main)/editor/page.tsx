@@ -225,16 +225,12 @@ export default function EditorPage() {
         }
       );
 
-      console.log(response, 'response111');
-
       // Store the user_resume_id for future updates
       if (response.data.data) {
         if (response.data.data.user_resume_id) {
           setUserResumeId(response.data.data.user_resume_id);
         }
       }
-
-      console.log("API Response:", response.data);
     } catch (error) {
       console.error("Error saving resume data:", error);
       if (axios.isAxiosError(error)) {

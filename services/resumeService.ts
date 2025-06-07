@@ -152,7 +152,7 @@ export const resumeService = {
       );
 
       const analyzeResult = await response.json();
-      console.log('Analyze API Response:', analyzeResult);
+      // console.log('Analyze API Response:', analyzeResult);
 
       if (!analyzeResult.data || !analyzeResult.data.cloud_file_path) {
         throw new Error('No analysis file path received');
@@ -170,7 +170,7 @@ export const resumeService = {
       );
 
       const fetchResult = await fetchAnalysisResponse.json();
-      console.log('Fetch Analysis API Response:', fetchResult);
+      // console.log('Fetch Analysis API Response:', fetchResult);
 
       if (!fetchResult.data) {
         throw new Error('No analysis data received');
@@ -181,7 +181,7 @@ export const resumeService = {
         Areas_of_Improvment: fetchResult.data.Areas_of_Improvment || [],
         strengths: fetchResult.data.strengths || []
       };
-      console.log('Final Analysis Data:', analysisData);
+      // console.log('Final Analysis Data:', analysisData);
 
       return analysisData;
     } catch (error) {

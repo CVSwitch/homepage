@@ -12,13 +12,13 @@ interface Props {
 export function JobDescriptionButton({ onJobDescriptionSubmit, hasJobDescription }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleClick = () => {
-    console.log("Button clicked");
+  const handleButtonClick = () => {
+    // console.log("Button clicked");
     setIsModalOpen(true);
   };
 
-  const handleComplete = (jobDescription: string, resumeFile: File) => {
-    console.log("Modal completed");
+  const handleModalComplete = (jobDescription: string, resumeFile: File) => {
+    // console.log("Modal completed");
     onJobDescriptionSubmit(jobDescription);
     setIsModalOpen(false);
   };
@@ -26,7 +26,7 @@ export function JobDescriptionButton({ onJobDescriptionSubmit, hasJobDescription
   return (
     <div className="relative">
       <button
-        onClick={handleClick}
+        onClick={handleButtonClick}
         className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-200 hover:border-blue-200 transition-colors"
       >
         <DocumentTextIcon className="w-5 h-5 text-blue-600" />
@@ -36,7 +36,7 @@ export function JobDescriptionButton({ onJobDescriptionSubmit, hasJobDescription
       <JobDescriptionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onComplete={handleComplete}
+        onComplete={handleModalComplete}
       />
     </div>
   );

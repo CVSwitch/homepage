@@ -95,16 +95,14 @@ export default function ProjectsForm() {
       </CardHeader>
 
       <div
-        className={`transition-all duration-700 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-700 ease-in-out overflow-hidden ${isOpen ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent>
           <Form {...form}>
             <form className="space-y-4">
               {fields.map((field, index) => (
                 <ProjectItem
-                  id={field.id}
                   key={field.id}
                   index={index}
                   form={form}
@@ -139,7 +137,6 @@ export default function ProjectsForm() {
 }
 
 interface ProjectItemProps {
-  id: string;
   form: UseFormReturn<Projects>;
   index: number;
   remove: (index: number) => void;
@@ -148,7 +145,6 @@ interface ProjectItemProps {
 }
 
 function ProjectItem({
-  id,
   form,
   index,
   remove,
@@ -207,9 +203,8 @@ function ProjectItem({
       </CardHeader>
 
       <div
-        className={`transition-all duration-700 ease-in-out overflow-hidden ${
-          isExpanded ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-700 ease-in-out overflow-hidden ${isExpanded ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent className="space-y-4">
           <FormField
@@ -274,6 +269,8 @@ function ProjectItem({
                     onChange={(json) =>
                       form.setValue(`projects.${index}.description`, json)
                     }
+                    showAIWriter={true}
+                    aiWriterFieldKey={`projects_${index}_description`}
                   />
                 </FormControl>
                 <FormMessage />

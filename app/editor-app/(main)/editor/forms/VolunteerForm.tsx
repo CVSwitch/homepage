@@ -61,9 +61,8 @@ export default function VolunteerForm() {
       </CardHeader>
 
       <div
-        className={`transition-all duration-500 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[1000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? "max-h-[1000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent>
           <Form {...form}>
@@ -79,6 +78,8 @@ export default function VolunteerForm() {
                         onChange={(json) =>
                           form.setValue("volunteer.description", json)
                         }
+                        showAIWriter={true}
+                        aiWriterFieldKey="volunteer_description"
                       />
                     </FormControl>
                   </FormItem>

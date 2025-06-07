@@ -101,16 +101,14 @@ export default function EducationForm() {
       </CardHeader>
 
       <div
-        className={`transition-all duration-700 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-700 ease-in-out overflow-hidden ${isOpen ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent>
           <Form {...form}>
             <form className="space-y-4">
               {fields.map((field, index) => (
                 <EducationItem
-                  id={field.id}
                   key={field.id}
                   index={index}
                   form={form}
@@ -147,7 +145,6 @@ export default function EducationForm() {
 }
 
 interface EducationItemProps {
-  id: string;
   form: UseFormReturn<EducationFormValues>;
   index: number;
   remove: (index: number) => void;
@@ -156,7 +153,6 @@ interface EducationItemProps {
 }
 
 function EducationItem({
-  id,
   form,
   index,
   remove,
@@ -222,9 +218,8 @@ function EducationItem({
       </CardHeader>
 
       <div
-        className={`transition-all duration-700 ease-in-out overflow-hidden ${
-          isExpanded ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-700 ease-in-out overflow-hidden ${isExpanded ? "max-h-[2000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent className="space-y-4">
           <FormField
@@ -333,6 +328,8 @@ function EducationItem({
                     onChange={(json) =>
                       form.setValue(`education.${index}.courses`, json)
                     }
+                    showAIWriter={true}
+                    aiWriterFieldKey={`education_${index}_courses`}
                   />
                 </FormControl>
                 <FormMessage />
