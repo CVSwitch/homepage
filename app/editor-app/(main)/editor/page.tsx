@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { API_CONFIG } from "@/config/api";
 import axios from "axios";
 import { useAuth } from "@/hooks/useAuth";
-import html2pdf from "html2pdf.js";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 
 interface ApiResponse {
   data: {
@@ -37,6 +37,7 @@ export default function EditorPage() {
   const searchParams = useSearchParams();
   const initialMode = searchParams.get("mode") === "cover-letter" ? "cover-letter" : "resume";
   const resumeId = searchParams.get("resume_id");
+  const tailoredResumeId = searchParams.get("tailored_resume_id");
   const isTailored = searchParams.get("tailored") === "true";
   const [mode, setMode] = useState<"resume" | "cover-letter">(initialMode);
   const { user } = useAuth();
@@ -47,18 +48,47 @@ export default function EditorPage() {
   const [initialResumeData, setInitialResumeData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Ensure component is mounted before accessing search params
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   useEffect(() => {
     setIsClient(true);
     if (resumeId && user?.uid) {
       setIsLoading(true);
+      console.log('🔄 Fetching resume data for:', { resumeId, userId: user.uid });
+      
       // Fetch resume data when resumeId is present
       axios.get<ResumeDataResponse>(
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_RESUME_DATA}?user_id=${user.uid}&resume_id=${resumeId}`
       )
         .then((response) => {
+          console.log('✅ API Response:', response.data);
           if (response.data.data) {
-            setInitialResumeData(response.data.data.parsed_json);
+            console.log('📊 Parsed JSON data:', response.data.data.parsed_json);
+            
+            // Transform the data structure from 'basics' to 'personalInfo'
+            if (response.data.data.parsed_json && response.data.data.parsed_json.basics) {
+              const transformedData = {
+                ...response.data.data.parsed_json,
+                personalInfo: response.data.data.parsed_json.basics,
+                // Remove the old 'basics' key
+                basics: undefined
+              };
+              
+              // Clean up the undefined key
+              delete transformedData.basics;
+              
+              console.log('🔄 Transformed data:', transformedData);
+              setInitialResumeData(transformedData);
+            } else {
+              setInitialResumeData(response.data.data.parsed_json);
+            }
+            
             setUserResumeId(resumeId);
+          } else {
+            console.log('❌ No data in response');
           }
         })
         .catch((error) => {
@@ -71,7 +101,6 @@ export default function EditorPage() {
         });
     }
   }, [resumeId, user?.uid]);
-
 
 
   if (!isClient || isLoading) {
@@ -169,6 +198,9 @@ export default function EditorPage() {
       };
 
       try {
+        // Dynamic import of html2pdf
+        const html2pdf = (await import("html2pdf.js")).default;
+        
         const tempContainer = document.createElement("div");
         tempContainer.innerHTML = renderedHtmlWithStyles;
         document.body.appendChild(tempContainer);
@@ -249,69 +281,99 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {validationMessage && (
-        <div
-          className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-center py-2 px-4 rounded shadow-md transition-opacity duration-500 z-50"
-          style={{ maxWidth: "400px" }}
-        >
-          {validationMessage}
-        </div>
-      )}
+      {/* Header with navigation and actions */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          {/* Left side - Back button, Resume/Cover Letter toggle, and Download button */}
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            
+            <div className="flex items-center space-x-2">
+              <Button
+                variant={mode === "resume" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setMode("resume")}
+                className="flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                Resume
+              </Button>
+              <Button
+                variant={mode === "cover-letter" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setMode("cover-letter")}
+                className="flex items-center gap-2"
+              >
+                <Mail className="h-4 w-4" />
+                Cover Letter
+              </Button>
+            </div>
+          </div>
 
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.back()}
-          className="flex items-center gap-1"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
 
-        <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-sm">
-          <Button
-            variant={mode === 'resume' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setMode('resume')}
-            className="flex items-center gap-1.5 transition-all duration-200"
-          >
-            <FileText className="h-4 w-4" />
-            Resume
-          </Button>
-          <Button
-            variant={mode === 'cover-letter' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setMode('cover-letter')}
-            className="flex items-center gap-1.5 transition-all duration-200"
-          >
-            <Mail className="h-4 w-4" />
-            Cover Letter
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-sm ml-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDownloadClick}
-            className="flex items-center gap-1.5 transition-all duration-200"
-          >
-            <FileText className="h-4 w-4" />
-            Save & Download
-          </Button>
         </div>
       </div>
 
-      {mode === 'resume' ? (
-        <ResumeEditor
-          ref={resumeEditorRef}
-          onSave={handleSave}
-          contentRef={resumePreviewRef as unknown as React.RefObject<HTMLDivElement>}
-          initialData={initialResumeData}
-        />
-      ) : (
-        <CoverLetterEditor />
+      {/* Main content */}
+      <div className="flex h-[calc(100vh-80px)]">
+        {/* Editor Section */}
+        <div className="flex-1 p-6">
+          {mode === "resume" ? (
+            <ResumeEditor
+              ref={resumeEditorRef}
+              resumeId={resumeId}
+              tailoredResumeId={tailoredResumeId}
+              isTailored={isTailored}
+              initialData={initialResumeData}
+            />
+          ) : (
+            <CoverLetterEditor />
+          )}
+        </div>
+
+        {/* Preview Section - Make it wider to fill the space */}
+        <div 
+          ref={resumePreviewRef}
+          className="w-[500px] border-l border-gray-50 bg-white" // Increased from w-96 to w-[500px]
+          style={{
+            background: 'white',
+            height: '100vh',
+            overflow: 'auto'
+          }}
+        >
+          <div 
+            className="pdf-preview"
+            style={{
+              background: 'white',
+              minHeight: '100%',
+              height: '100%',
+              width: '100%',
+              padding: '20px',
+              boxSizing: 'border-box'
+            }}
+          >
+            <ResumePreviewSection
+              ref={resumePreviewRef}
+              resumeData={initialResumeData}
+              template="modern"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Validation Message */}
+      {validationMessage && (
+        <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          {validationMessage}
+        </div>
       )}
     </div>
   );

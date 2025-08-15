@@ -73,7 +73,7 @@ export default function TemplateDrawer({
         <Button
           variant="outline"
           size="icon"
-          className="fixed right-4 top-4 z-50 opacity-60 hover:opacity-100"
+          className="fixed right-4 top-4 z-50 bg-white border-gray-300 hover:bg-gray-50 text-gray-700 hover:text-gray-900"
         >
           <LayoutTemplate className="h-4 w-4" />
         </Button>
@@ -93,7 +93,7 @@ export default function TemplateDrawer({
                   key={type}
                   className={`p-4 rounded-lg border cursor-pointer transition-all ${
                     currentTemplate === type
-                      ? "border-blue-500 bg-blue-50"
+                      ? "border-blue-600 bg-white shadow-md"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                   onClick={() =>
@@ -104,7 +104,9 @@ export default function TemplateDrawer({
                 >
                   <div className="flex items-center gap-2 mb-2">
                     {icon}
-                    <h3 className="font-semibold">{title}</h3>
+                    <h3 className={`font-semibold ${
+                      currentTemplate === type ? "text-blue-600" : "text-gray-900"
+                    }`}>{title}</h3>
                   </div>
                   <p className="text-sm text-gray-600">{description}</p>
                 </div>
