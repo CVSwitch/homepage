@@ -28,7 +28,7 @@ export default function Home() {
   }, [router]);
 
   const handleUploadResume = (file: File) => {
-    console.log('Resume uploaded:', file.name);
+    // console.log('Resume uploaded:', file.name);
     setPastResumes((prev) => [...prev, file.name]);
     setHasUploadedResume(true);
   };
@@ -37,6 +37,26 @@ export default function Home() {
     if (user) {
       try {
         await completeOnboarding(user.uid, selectedOption);
+      } catch (error) {
+        console.error('Error saving user preference:', error);
+      }
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    if (user) {
+      try {
+        // console.log('Resume uploaded:', file.name);
+
+        // Save user preference for file upload
+        const preference = {
+          userId: user.uid,
+          action: 'file_upload',
+          timestamp: new Date().toISOString(),
+          fileName: file.name
+        };
+
+        await saveUserPreference(preference);
       } catch (error) {
         console.error('Error saving user preference:', error);
       }
@@ -54,7 +74,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
-      
+
       <main className="flex-1 ml-64 p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">
@@ -62,9 +82,9 @@ export default function Home() {
           </h1>
         </div>
 
-        <HeroSection 
-          user={user} 
-          hasUploadedResume={hasUploadedResume} 
+        <HeroSection
+          user={user}
+          hasUploadedResume={hasUploadedResume}
           onUploadResume={handleUploadResume}
           pastResumes={pastResumes}
           onOfferingSelect={handleOfferingSelect}

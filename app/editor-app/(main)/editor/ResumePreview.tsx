@@ -34,7 +34,7 @@ export default function ResumePreview({ className, contentRef }: ResumePreviewPr
   const containerRef = useRef<HTMLDivElement>(null);
   const { width } = useDimensions(containerRef as React.RefObject<HTMLElement>);
   const { resumeData } = useResume();
-  console.log(resumeData);
+  // console.log(resumeData);
   // 794 is the width of the resume previewer
   // 210/297 is the aspect ratio of an A4 paper
 
@@ -63,7 +63,7 @@ export default function ResumePreview({ className, contentRef }: ResumePreviewPr
     >
       <div
         className={cn("space-y-6 p-6", !width && "invisible")}
-       // style={{ zoom: (1 / 794) * width }}
+        // style={{ zoom: (1 / 794) * width }}
         ref={contentRef}
         id="resumePreviewContent"
       >
@@ -338,7 +338,7 @@ const GenericSection = memo(({ title, data }: GenericSectionProps) => {
     <div className="w-full">
       <p className="text-lg font-semibold break-words">{title}</p>
       <hr className="border-black border-1 mb-2" />
-      
+
       {data.description && (
         <div
           className="mt-2 text-sm break-words"

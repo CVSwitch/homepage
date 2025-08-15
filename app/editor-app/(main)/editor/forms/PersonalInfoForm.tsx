@@ -22,6 +22,7 @@ import {
 import { PersonalInfo, personalInfoSchema } from "@/lib/validation";
 import { useResume } from "./ResumeProvider";
 import { debounce } from "lodash";
+import { AIWriterButton } from "@/components/ui/AIWriterButton";
 
 export default function PersonalInfoForm() {
   const { resumeData, setResumeData } = useResume();
@@ -74,9 +75,8 @@ export default function PersonalInfoForm() {
       </CardHeader>
 
       <div
-        className={`transition-all duration-1000 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[1000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-1000 ease-in-out overflow-hidden ${isOpen ? "max-h-[1200px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent>
           <Form {...form}>
@@ -169,7 +169,15 @@ export default function PersonalInfoForm() {
                   <FormItem>
                     <FormLabel>Summary</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <div className="space-y-3">
+                        <Input {...field} />
+                        <AIWriterButton
+                          currentText={field.value || ""}
+                          onAccept={(newText) => form.setValue("summary", newText)}
+                          fieldKey="personalInfo_summary"
+                          className="w-full sm:w-auto"
+                        />
+                      </div>
                     </FormControl>
                   </FormItem>
                 )}

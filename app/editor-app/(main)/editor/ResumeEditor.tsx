@@ -14,7 +14,8 @@ import ProjectsForm from "./forms/ProjectsForm";
 import ResumePreviewSection from "./ResumePreviewSection";
 import { ResumeValues } from "@/lib/validation";
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from "react";
-import html2pdf from "html2pdf.js";
+// Remove this line that's causing the SSR error:
+// import html2pdf from "html2pdf.js";
 
 interface ResumeEditorProps {
   initialData?: ResumeValues;
@@ -54,6 +55,8 @@ function ResumeEditorInternal({
       };
 
       try {
+        // Dynamic import of html2pdf only when needed
+        const html2pdf = (await import("html2pdf.js")).default;
         const pdfBlob = await html2pdf().set(options).from(contentRef.current).outputPdf("blob");
         const pdfFile = new File([pdfBlob], "resume.pdf", { type: "application/pdf" });
         onSave(resumeData, template, pdfFile);
@@ -86,20 +89,20 @@ function ResumeEditorInternal({
           <AwardsForm />
         </div>
         <div className="grow border-r h-full" />
-        <ResumePreviewSection 
-          template={template} 
-          setTemplate={setTemplate} 
-          contentRef={contentRef as React.RefObject<HTMLDivElement>} 
+        <ResumePreviewSection
+          template={template}
+          setTemplate={setTemplate}
+          contentRef={contentRef as React.RefObject<HTMLDivElement>}
         />
       </main>
     </div>
   );
 }
 
-const ResumeEditor = forwardRef<ResumeEditorRef, ResumeEditorProps>(
+export const ResumeEditor = forwardRef<ResumeEditorRef, ResumeEditorProps>(
   ({ initialData, onSave, contentRef }, ref) => {
     const [template, setTemplate] = useState<TemplateType>("single");
-    const internalSaveRef = useRef<{ save: () => Promise<void> }>({ save: async () => {} });
+    const internalSaveRef = useRef<{ save: () => Promise<void> }>({ save: async () => { } });
 
     // Forward the internal save method through the ref
     useImperativeHandle(ref, () => ({

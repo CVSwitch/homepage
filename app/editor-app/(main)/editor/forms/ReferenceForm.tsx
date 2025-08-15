@@ -67,9 +67,8 @@ export default function ReferenceForm() {
       </CardHeader>
 
       <div
-        className={`transition-all duration-500 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[1000px] opacity-100 py-4" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? "max-h-[1000px] opacity-100 py-4" : "max-h-0 opacity-0"
+          }`}
       >
         <CardContent>
           <Form {...form}>
@@ -85,6 +84,8 @@ export default function ReferenceForm() {
                         onChange={(json) =>
                           form.setValue("references.description", json)
                         }
+                        showAIWriter={true}
+                        aiWriterFieldKey="references_description"
                       />
                     </FormControl>
                   </FormItem>

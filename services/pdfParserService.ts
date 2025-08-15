@@ -22,14 +22,14 @@ export const pdfParserService = {
       const response = await fetch(
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FETCH_USER_DATA}?user_id=${userId}&path_pdf_url=${pdfPath}`
       );
-      
+
       if (!response.ok) {
         throw new Error(`Failed to convert PDF to JSON: ${response.status}`);
       }
-      
+
       const result = await response.json() as ParsedJsonResponse;
-      console.log('PDF converted to JSON successfully:', result);
-      
+      // console.log('PDF converted to JSON successfully:', result);
+
       return result.data.path_public_url;
     } catch (error) {
       console.error('Error converting PDF to JSON:', error);

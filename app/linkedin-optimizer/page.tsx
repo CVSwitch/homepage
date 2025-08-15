@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect} from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { LinkedInSection } from "@/components/linkedin/LinkedInSection";
 import { resumeService } from "@/services/resumeService";
 
@@ -26,11 +26,11 @@ import { useResumes } from "@/hooks/useResumes";
 export default function LinkedInOptimizerPage() {
   const { user } = useAuth();
 
-  const { 
-    resumes, 
-    isLoading, 
-    uploadResume, 
-    uploadLoading 
+  const {
+    resumes,
+    isLoading,
+    uploadResume,
+    uploadLoading
   } = useResumes(user?.uid);
 
   // State to store the selected resume ID
@@ -47,8 +47,8 @@ export default function LinkedInOptimizerPage() {
       setLoadingSuggestions(true); // Show loader
       try {
         const suggestions = await resumeService.getLinkedInSuggestions(user?.uid || '', selectedResumeId);
+        // console.log('LinkedIn suggestions:', suggestions);
         setSuggestions(JSON.parse(suggestions.data).About); // Store fetched suggestions
-        console.log('LinkedIn suggestions:', suggestions);
       } catch (error) {
         console.error('Error fetching LinkedIn suggestions:', error);
         alert('Failed to fetch LinkedIn suggestions. Please try again.');
@@ -57,6 +57,31 @@ export default function LinkedInOptimizerPage() {
       }
     } else {
       alert('Please select a resume to get LinkedIn suggestions.');
+    }
+  };
+
+  const handleOptimizeClick = async () => {
+    if (!selectedResumeId || !user) {
+      alert('Please select a resume and sign in.');
+      return;
+    }
+
+    try {
+      // Check if the selected resume has a valid cloudPath
+      if (!selectedResumeId) {
+        // console.error("cloudPath is undefined for this resume.");
+        alert("cloudPath is undefined for this resume.");
+        return;
+      }
+
+      // Here you would typically call an API to optimize the LinkedIn profile
+      // For now, we'll just simulate the process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // setOptimizationComplete(true);
+    } catch (error) {
+      console.error('Error optimizing LinkedIn profile:', error);
+      alert('Failed to optimize LinkedIn profile. Please try again.');
     }
   };
 
@@ -84,11 +109,10 @@ export default function LinkedInOptimizerPage() {
                       console.error("cloudPath is undefined for this resume.");
                     }
                   }}
-                  className={`flex items-center justify-between p-2 bg-slate-50 rounded-lg border ${
-                    selectedResumeId === resume.cloudPath
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200"
-                  } cursor-pointer`}
+                  className={`flex items-center justify-between p-2 bg-slate-50 rounded-lg border ${selectedResumeId === resume.cloudPath
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200"
+                    } cursor-pointer`}
                 >
                   <div className="flex items-center gap-2">
                     <DocumentTextIcon className="w-5 h-5 text-indigo-600" />
@@ -159,15 +183,15 @@ export default function LinkedInOptimizerPage() {
             <ul className="list-disc list-inside text-slate-700 space-y-2">
               <li>Use a professional photo – High-quality headshot with a clean background.</li>
               <li>
-                Write a strong headline – Go beyond just your job title. Show your value (e.g., 
-                “Product Manager | Driving Growth through Data-Driven Strategy”).
+                Write a strong headline – Go beyond just your job title. Show your value (e.g.,
+                "Product Manager | Driving Growth through Data-Driven Strategy").
               </li>
               <li>
                 Craft a compelling summary – Tell your story: who you are, what you do, and what drives you.
               </li>
               <li>
-                Highlight achievements in your experience section – Use bullet points, quantify impact 
-                (e.g., “Increased sales by 30% in 6 months”).
+                Highlight achievements in your experience section – Use bullet points, quantify impact
+                (e.g., "Increased sales by 30% in 6 months").
               </li>
               <li>
                 Add relevant skills – Keep it focused and up-to-date; LinkedIn uses these for search rankings.

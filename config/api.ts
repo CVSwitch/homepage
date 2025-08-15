@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api.cvswitch.com/',  // localhost:4400 to test in local 
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://0.0.0.0:4400', //|| 'http://localhost:4400', //|| 'http://0.0.0.0:4400',  // localhost:4400 to test in local , https://api.cvswitch.com/ for production
   ENDPOINTS: {
     FETCH_USER_DATA: '/api/v1/fetchuserdata',
     UPLOAD_COVER_LETTER: '/api/v1/uploadcoverletter',
@@ -12,5 +12,11 @@ export const API_CONFIG = {
     GET_RESUME_DATA: '/api/v1/getresumedata',
     DELETE_RESUME: '/api/v1/deleteresume',
     PARSE_UPLOADED_RESUME: '/api/v1/parse_uploaded_resume',
+    TAILOR_RESUME: '/api/v1/tailorresume',
+    AI_WRITE: '/api/v1/aiwritebutton',
   }
-}; 
+};
+
+
+// "description": "<ul class=\"list-disc ml-3\"><li><p>Design, develop, modify, and test software applications and systems for various products or services.</p></li><li><p>Gain a deep understanding of relevant product areas, codebases, and systems.</p></li><li><p>Apply data analysis, programming, and software engineering skills to produce high-quality code with robust test coverage.</p></li></ul>",
+

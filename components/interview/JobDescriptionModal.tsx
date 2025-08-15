@@ -13,8 +13,8 @@ interface Props {
 type Step = 1 | 2 | 3;
 
 export function JobDescriptionModal({ isOpen, onClose, onComplete }: Props) {
-  console.log("Modal rendered, isOpen:", isOpen);
-  
+  // console.log("Modal rendered, isOpen:", isOpen);
+
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [jobDescription, setJobDescription] = useState("");
   const [jobUrl, setJobUrl] = useState("");
@@ -82,11 +82,10 @@ export function JobDescriptionModal({ isOpen, onClose, onComplete }: Props) {
                             className={`flex items-center ${step !== 3 ? 'gap-2' : ''}`}
                           >
                             <div
-                              className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                step <= currentStep
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-200 text-gray-600'
-                              }`}
+                              className={`w-8 h-8 rounded-full flex items-center justify-center ${step <= currentStep
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-200 text-gray-600'
+                                }`}
                             >
                               {step}
                             </div>
@@ -138,7 +137,7 @@ export function JobDescriptionModal({ isOpen, onClose, onComplete }: Props) {
                       <Dialog.Title as="h3" className="text-lg font-semibold text-gray-900">
                         Select Resume
                       </Dialog.Title>
-                      
+
                       {/* Existing Resumes */}
                       <div className="space-y-2">
                         <h4 className="font-medium text-gray-700">Recent Resumes</h4>
@@ -146,11 +145,10 @@ export function JobDescriptionModal({ isOpen, onClose, onComplete }: Props) {
                           <button
                             key={resume.id}
                             onClick={() => setResumeFile(new File([], resume.name))} // This is a mock, replace with actual file
-                            className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors ${
-                              resumeFile?.name === resume.name
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-200 hover:border-blue-200'
-                            }`}
+                            className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors ${resumeFile?.name === resume.name
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-blue-200'
+                              }`}
                           >
                             <DocumentTextIcon className="w-5 h-5 text-blue-600" />
                             <div className="flex-1 text-left">
@@ -214,11 +212,10 @@ export function JobDescriptionModal({ isOpen, onClose, onComplete }: Props) {
                   <button
                     onClick={handleNext}
                     disabled={!isNextEnabled()}
-                    className={`px-6 py-2 rounded-xl text-white transition-colors ${
-                      isNextEnabled()
-                        ? 'bg-blue-600 hover:bg-blue-700'
-                        : 'bg-gray-300 cursor-not-allowed'
-                    }`}
+                    className={`px-6 py-2 rounded-xl text-white transition-colors ${isNextEnabled()
+                      ? 'bg-blue-600 hover:bg-blue-700'
+                      : 'bg-gray-300 cursor-not-allowed'
+                      }`}
                   >
                     {currentStep === 3 ? 'Start Interview' : 'Next'}
                   </button>

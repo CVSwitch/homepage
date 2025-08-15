@@ -13,7 +13,7 @@ export function useResumes(userId: string | undefined) {
       setResumes([]);
       return;
     }
-    
+
     fetchResumes(userId);
   }, [userId]);
 
@@ -32,7 +32,7 @@ export function useResumes(userId: string | undefined) {
 
   const uploadResume = async (file: File) => {
     if (!userId) return;
-    
+
     try {
       setUploadLoading(true);
       const response = await resumeService.uploadResume(userId, file);
@@ -47,11 +47,11 @@ export function useResumes(userId: string | undefined) {
     }
   };
 
-  return { 
-    resumes, 
-    isLoading, 
-    uploadLoading, 
-    error, 
+  return {
+    resumes,
+    isLoading,
+    uploadLoading,
+    error,
     uploadResume,
     refreshResumes: () => userId && fetchResumes(userId)
   };
